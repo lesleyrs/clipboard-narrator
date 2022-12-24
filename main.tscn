@@ -1,0 +1,224 @@
+[gd_scene load_steps=3 format=3 uid="uid://dgo7v2i3mbmtb"]
+
+[ext_resource type="Script" path="res://main.gd" id="1_qjk75"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_xstnx"]
+draw_center = false
+border_width_left = 3
+border_width_top = 3
+border_width_right = 3
+border_width_bottom = 3
+
+[node name="Main" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_qjk75")
+metadata/_edit_lock_ = true
+
+[node name="LineEditFilterName" type="LineEdit" parent="."]
+layout_mode = 1
+offset_left = 128.0
+offset_top = 192.0
+offset_right = 195.063
+offset_bottom = 223.0
+placeholder_text = "Name"
+
+[node name="LineEditFilterLang" type="LineEdit" parent="."]
+layout_mode = 0
+offset_left = 224.0
+offset_top = 192.0
+offset_right = 322.0
+offset_bottom = 223.0
+placeholder_text = "Language"
+
+[node name="Label" type="Label" parent="LineEditFilterLang"]
+layout_mode = 0
+offset_left = -192.0
+offset_right = -128.0
+offset_bottom = 32.0
+text = "Filter:"
+
+[node name="Tree" type="Tree" parent="."]
+layout_mode = 0
+offset_left = 32.0
+offset_top = 32.0
+offset_right = 352.0
+offset_bottom = 160.0
+columns = 2
+
+[node name="ButtonDemo" type="Button" parent="."]
+layout_mode = 0
+offset_left = 384.0
+offset_top = 32.0
+offset_right = 544.0
+offset_bottom = 63.0
+text = "How to use"
+
+[node name="ButtonIntSpeak" type="Button" parent="."]
+layout_mode = 1
+offset_left = 384.0
+offset_top = 96.0
+offset_right = 463.0
+offset_bottom = 127.0
+text = "Interrupt"
+
+[node name="ButtonSpeak" type="Button" parent="."]
+layout_mode = 0
+offset_left = 480.0
+offset_top = 96.0
+offset_right = 544.0
+offset_bottom = 127.0
+text = "Speak"
+
+[node name="ButtonStop" type="Button" parent="."]
+layout_mode = 1
+offset_left = 384.0
+offset_top = 160.0
+offset_right = 448.0
+offset_bottom = 191.0
+text = "Stop"
+
+[node name="ButtonPause" type="Button" parent="."]
+layout_mode = 1
+offset_left = 480.0
+offset_top = 160.0
+offset_right = 544.0
+offset_bottom = 191.0
+toggle_mode = true
+text = "Pause"
+
+[node name="HSliderRate" type="HSlider" parent="."]
+layout_mode = 0
+offset_left = 128.0
+offset_top = 256.0
+offset_right = 327.0
+offset_bottom = 272.0
+min_value = 0.1
+max_value = 10.0
+step = 0.05
+value = 1.1
+exp_edit = true
+
+[node name="Label" type="Label" parent="HSliderRate"]
+layout_mode = 0
+offset_left = -96.0
+offset_right = -56.0
+offset_bottom = 26.0
+text = "Rate:"
+
+[node name="Value" type="Label" parent="HSliderRate"]
+layout_mode = 1
+offset_left = 224.0
+offset_right = 265.0
+offset_bottom = 26.0
+text = "1.00x"
+
+[node name="HSliderPitch" type="HSlider" parent="."]
+layout_mode = 1
+offset_left = 128.0
+offset_top = 288.0
+offset_right = 326.0
+offset_bottom = 304.0
+max_value = 2.0
+step = 0.05
+value = 1.0
+
+[node name="Label" type="Label" parent="HSliderPitch"]
+layout_mode = 1
+offset_left = -96.0
+offset_right = -52.0
+offset_bottom = 26.0
+text = "Pitch:"
+
+[node name="Value" type="Label" parent="HSliderPitch"]
+layout_mode = 1
+offset_left = 224.0
+offset_right = 265.0
+offset_bottom = 26.0
+text = "1.00x"
+
+[node name="HSliderVolume" type="HSlider" parent="."]
+layout_mode = 1
+offset_left = 128.0
+offset_top = 320.0
+offset_right = 329.0
+offset_bottom = 336.0
+min_value = 1.0
+value = 50.0
+
+[node name="Label" type="Label" parent="HSliderVolume"]
+layout_mode = 1
+offset_left = -96.0
+offset_right = -32.0
+offset_bottom = 26.0
+text = "Volume:"
+
+[node name="Value" type="Label" parent="HSliderVolume"]
+layout_mode = 1
+offset_left = 224.0
+offset_right = 264.0
+offset_bottom = 26.0
+text = "50%"
+
+[node name="Utterance" type="TextEdit" parent="."]
+layout_mode = 0
+offset_left = 32.0
+offset_top = 384.0
+offset_right = 480.0
+offset_bottom = 640.0
+placeholder_text = "Manual text reading currently disabled in exchange for reading clipboard, will probably add toggle in future version. Note: The granularity of pitch, rate, and volume is engine and voice dependent. Values may be truncated."
+wrap_mode = 1
+draw_spaces = true
+
+[node name="Label" type="Label" parent="."]
+layout_mode = 0
+offset_left = 576.0
+offset_right = 864.0
+offset_bottom = 32.0
+text = "Waiting for input..."
+
+[node name="RichTextLabel" type="RichTextLabel" parent="."]
+layout_mode = 0
+offset_left = 576.0
+offset_top = 32.0
+offset_right = 864.0
+offset_bottom = 640.0
+theme_override_styles/normal = SubResource("StyleBoxFlat_xstnx")
+bbcode_enabled = true
+scroll_following = true
+
+[node name="Log" type="TextEdit" parent="."]
+layout_mode = 0
+offset_left = 896.0
+offset_top = 32.0
+offset_right = 1120.0
+offset_bottom = 640.0
+editable = false
+context_menu_enabled = false
+shortcut_keys_enabled = false
+virtual_keyboard_enabled = false
+middle_mouse_paste_enabled = false
+wrap_mode = 1
+
+[node name="ButtonClearLog" type="Button" parent="Log"]
+clip_contents = true
+layout_mode = 0
+offset_right = 224.0
+offset_bottom = 31.0
+text = "Clear"
+
+[connection signal="text_changed" from="LineEditFilterName" to="." method="_on_line_edit_filter_name_text_changed"]
+[connection signal="text_changed" from="LineEditFilterLang" to="." method="_on_line_edit_filter_name_text_changed"]
+[connection signal="pressed" from="ButtonDemo" to="." method="_on_button_demo_pressed"]
+[connection signal="pressed" from="ButtonIntSpeak" to="." method="_on_button_int_speak_pressed"]
+[connection signal="pressed" from="ButtonSpeak" to="." method="_on_button_speak_pressed"]
+[connection signal="pressed" from="ButtonStop" to="." method="_on_button_stop_pressed"]
+[connection signal="pressed" from="ButtonPause" to="." method="_on_button_pause_pressed"]
+[connection signal="value_changed" from="HSliderRate" to="." method="_on_h_slider_rate_value_changed"]
+[connection signal="value_changed" from="HSliderPitch" to="." method="_on_h_slider_pitch_value_changed"]
+[connection signal="value_changed" from="HSliderVolume" to="." method="_on_h_slider_volume_value_changed"]
+[connection signal="pressed" from="Log/ButtonClearLog" to="." method="_on_button_clear_log_pressed"]
