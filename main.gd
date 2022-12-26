@@ -9,17 +9,16 @@ var current_state = MODES.INTERRUPT
 var current_title = "INTERRUPT MODE"
 
 # TODO
-# RenderingServer.set_default_clear_color() colorpicker + saving
 # allow hidpi good for gui or not?
+# RenderingServer.set_default_clear_color() colorpicker?
 # add theme and font, find out best anchors and window settings, 2d scaling is bugged right now
 # mini mode with always on top, google icons w/ borderless (atm glitchy and moves when opened)
-# don't interrupt before speach ended/cancelled, interrupting speak breaks the yellow highlighting
+# don't interrupt before voice ended/cancelled, interrupting voice breaks the yellow highlighting
 # disable scrolling if speaking or why is scroll bar glitchy/forced to bottom?
-# no smart word wrap mode for textedit, tts stops speaking? check after manual pasting re-added
+# no smart word wrap mode for textedit https://github.com/godotengine/godot/issues/3985
 # save clipboard in array for going back in history?
 # allow forcing english by default setting after saving
-# tabs for seperate text editor maybe?
-# web build cuts off before finishing help text
+# web build cuts off before finishing help text, very buggy
 
 # Note: On Windows and Linux (X11), utterance text can use SSML markup.
 # SSML support is engine and voice dependent. If the engine does not support SSML,
@@ -236,7 +235,7 @@ func _on_button_demo_pressed():
 	var voice = DisplayServer.tts_get_voices_for_language("en")
 	var help_text = \
 "Tab or Shift-Tab to change modes (in title bar).
-Enter or I to enter text. Escape to unfocus text editor.
+Enter to focus text editor. Escape to lose focus.
 Space to start/pause. S to stop. R to repeat. H for help.
 Z-X-C keys to focus sliders, Shift for faster speed.
 

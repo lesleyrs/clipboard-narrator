@@ -172,7 +172,7 @@ offset_right = 480.0
 offset_bottom = 640.0
 placeholder_text = "Ctrl+c anywhere to activate tts w/o window focus (PC)
 Tab or Shift-Tab to change modes (in title bar).
-Enter or I to enter text. Escape to unfocus text editor.
+Enter to focus text editor. Escape to lose focus.
 Space to start/pause. S to stop. R to repeat. H for help.
 Z-X-C keys to focus sliders, Shift for faster speed.
 
