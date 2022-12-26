@@ -14,7 +14,7 @@ Current problems are commented in `main.gd`, but it's completely functional.
 Inside the application press `h` to get a tts explanation. Copying the same text back to back does not work, press `r` for that.
 
 # interrupt, queue, and manual modes
-This application works differently based on which mode you are in (changed by pressing tab)
+This application works differently based on which mode you are in (changed by pressing tab or shift-tab)
 
 - **interrupt**
 
