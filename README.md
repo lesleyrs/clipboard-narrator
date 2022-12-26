@@ -7,6 +7,6 @@ I made this for myself to save me from doing more reading than needed, but I thi
 
 Web build will spam for clipboard access as it's required to work currently.
 
-PC build is recommended as it'll be able to read from clipboard in the background.
+PC build is recommended as it'll be able to read from clipboard in the background. No internet connection needed.
 
 Current problems are comments in `main.gd`, but it's completely functional.

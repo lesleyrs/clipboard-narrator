@@ -48,6 +48,7 @@ offset_left = 32.0
 offset_top = 32.0
 offset_right = 352.0
 offset_bottom = 160.0
+focus_mode = 0
 columns = 2
 
 [node name="ButtonDemo" type="Button" parent="."]
@@ -147,7 +148,6 @@ offset_left = 128.0
 offset_top = 320.0
 offset_right = 329.0
 offset_bottom = 336.0
-min_value = 1.0
 value = 50.0
 
 [node name="Label" type="Label" parent="HSliderVolume"]
@@ -170,7 +170,13 @@ offset_left = 32.0
 offset_top = 384.0
 offset_right = 480.0
 offset_bottom = 640.0
-placeholder_text = "Manual text reading currently disabled in exchange for reading clipboard, will probably add toggle in future version. Note: The granularity of pitch, rate, and volume is engine and voice dependent. Values may be truncated."
+placeholder_text = "Ctrl+c anywhere to activate tts without window focus!
+Tab to change modes (titlebar).
+Enter or I to enter text. Escape to unfocus text editor.
+Space to start/pause. S to stop. R to repeat. H for help.
+Z-X-C keys to focus sliders, Shift for faster speed.
+
+Note: The granularity of pitch, rate, and volume is engine and voice dependent. Values may be truncated."
 wrap_mode = 1
 draw_spaces = true
 
@@ -197,6 +203,7 @@ offset_left = 896.0
 offset_top = 32.0
 offset_right = 1120.0
 offset_bottom = 640.0
+focus_mode = 0
 editable = false
 context_menu_enabled = false
 shortcut_keys_enabled = false

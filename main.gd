@@ -4,24 +4,28 @@ var id = 0
 var ut_map = {}
 var voices
 var last_copy = DisplayServer.clipboard_get()
+enum MODES { INTERRUPT, QUEUE, MANUAL }
+var current_state = MODES.INTERRUPT
+var current_title = "INTERRUPT MODE"
 
 # TODO
-# RenderingServer.set_default_clear_color() colorpicker
+# RenderingServer.set_default_clear_color() colorpicker + saving
 # allow hidpi good for gui or not?
 # add theme and font, find out best anchors and window settings, 2d scaling is bugged right now
-# saving settings, allow changing bg color, keybinds for stop, pause, play, interrupt
-# allow changing ctrl+c to interrupt or speak or disabled for $Utterance
 # mini mode with always on top, google icons w/ borderless (atm glitchy and moves when opened)
 # don't interrupt before speach ended/cancelled, interrupting speak breaks the yellow highlighting
 # disable scrolling if speaking or why is scroll bar glitchy/forced to bottom?
 # no smart word wrap mode for textedit, tts stops speaking? check after manual pasting re-added
 # save clipboard in array for going back in history?
+# allow forcing english by default setting after saving
+# tabs for seperate text editor maybe?
 
 # Note: On Windows and Linux (X11), utterance text can use SSML markup.
 # SSML support is engine and voice dependent. If the engine does not support SSML,
 # you should strip out all XML markup before calling tts_speak().
 
 func _ready():
+	DisplayServer.window_set_title("Clipboard Narrator %s" % current_title) # check after saving if it works
 	voices = DisplayServer.tts_get_voices()
 	var root = $Tree.create_item()
 	$Tree.set_hide_root(true)
@@ -47,12 +51,73 @@ func _ready():
 	DisplayServer.tts_set_utterance_callback(DisplayServer.TTS_UTTERANCE_ENDED, Callable(self, "_on_utterance_end"))
 	DisplayServer.tts_set_utterance_callback(DisplayServer.TTS_UTTERANCE_CANCELED, Callable(self, "_on_utterance_error"))
 	DisplayServer.tts_set_utterance_callback(DisplayServer.TTS_UTTERANCE_BOUNDARY, Callable(self, "_on_utterance_boundary"))
-	set_process(true) # what's the purpose of this? low processor mode on or off
+	set_process(true) # what's the purpose of this? low processor mode on or off?
 	
+func _unhandled_input(_event):
+	DisplayServer.window_set_title("Clipboard Narrator %s" % current_title)
+	if Input.is_action_just_pressed("tts_tab") and !$Utterance.has_focus():
+		match current_state:
+			0:
+				current_state = MODES.QUEUE
+				current_title = "QUEUE MODE"
+			1:
+				current_state = MODES.MANUAL
+				current_title = "MANUAL MODE"
+			2:
+				current_state = MODES.INTERRUPT
+				current_title = "INTERRUPT MODE"
+		
+	if Input.is_action_just_pressed("tts_space") and !DisplayServer.tts_is_speaking():
+		$ButtonSpeak.emit_signal("pressed")
+		
+	elif Input.is_action_just_pressed("tts_space") and DisplayServer.tts_is_speaking():
+		$ButtonPause.emit_signal("pressed")
+	
+	if Input.is_action_just_pressed("tts_escape"):
+		$Utterance.release_focus()
+		
+	if Input.is_action_just_pressed("tts_enter") or Input.is_action_just_pressed("tts_i"):
+		$Utterance.grab_focus.call_deferred()
+		
+	if Input.is_action_just_pressed("tts_z"):
+		$HSliderRate.grab_focus.call_deferred()
+		
+	if Input.is_action_just_pressed("tts_x"):
+		$HSliderPitch.grab_focus.call_deferred()
+		
+	if Input.is_action_just_pressed("tts_c"):
+		$HSliderVolume.grab_focus.call_deferred()
+		
+	if Input.is_action_pressed("tts_shift"):
+		$HSliderRate.step = 0.5
+		$HSliderPitch.step = 0.5
+		$HSliderVolume.step = 10
+	else:
+		$HSliderRate.step = 0.05
+		$HSliderPitch.step = 0.05
+		$HSliderVolume.step = 1
+		
+	if Input.is_action_just_pressed("tts_h"):
+		$ButtonDemo.emit_signal("pressed")
+		
+	if Input.is_action_just_pressed("tts_r"):
+		$ButtonIntSpeak.emit_signal("pressed")
+		
+	if Input.is_action_just_pressed("tts_s"):
+		$ButtonStop.emit_signal("pressed")
+		
 func _process(_delta):
 	if DisplayServer.clipboard_get() != last_copy:
-		$ButtonIntSpeak.emit_signal("pressed")
-		last_copy = DisplayServer.clipboard_get()
+		match current_state:
+			0:
+				$ButtonIntSpeak.emit_signal("pressed")
+				last_copy = DisplayServer.clipboard_get()
+			1:
+				$ButtonSpeak.emit_signal("pressed")
+				last_copy = DisplayServer.clipboard_get()
+			2:
+				last_copy = DisplayServer.clipboard_get()
+		
 	$ButtonPause.set_pressed(DisplayServer.tts_is_paused())
 	if DisplayServer.tts_is_speaking():
 		$Label.modulate = Color(1, 0, 0)
@@ -90,8 +155,13 @@ func _on_button_speak_pressed():
 	if !OS.has_feature("web"):
 		if $Tree.get_selected():
 			$Log.text += "utterance %d queried\n" % [id]
-			ut_map[id] = DisplayServer.clipboard_get()
-			DisplayServer.tts_speak(DisplayServer.clipboard_get(), $Tree.get_selected().get_metadata(0), $HSliderVolume.value, $HSliderPitch.value, $HSliderRate.value, id, false)
+			match current_state:
+				0, 1:
+					ut_map[id] = DisplayServer.clipboard_get()
+					DisplayServer.tts_speak(DisplayServer.clipboard_get(), $Tree.get_selected().get_metadata(0), $HSliderVolume.value, $HSliderPitch.value, $HSliderRate.value, id, false)
+				2:
+					ut_map[id] = $Utterance.text
+					DisplayServer.tts_speak($Utterance.text, $Tree.get_selected().get_metadata(0), $HSliderVolume.value, $HSliderPitch.value, $HSliderRate.value, id, false)
 			id += 1
 		else:
 			OS.alert("Select voice.")
@@ -100,16 +170,26 @@ func _on_button_speak_pressed():
 		var voice = DisplayServer.tts_get_voices_for_language("en")
 		if !voice.is_empty():
 			$Log.text += "utterance %d queried\n" % [id]
-			ut_map[id] = DisplayServer.clipboard_get()
-			DisplayServer.tts_speak(DisplayServer.clipboard_get(), voice[0], $HSliderVolume.value, $HSliderPitch.value, $HSliderRate.value, id, false)
+			match current_state:
+				0, 1:
+					ut_map[id] = DisplayServer.clipboard_get()
+					DisplayServer.tts_speak(DisplayServer.clipboard_get(), voice[0], $HSliderVolume.value, $HSliderPitch.value, $HSliderRate.value, id, false)
+				2:
+					ut_map[id] = $Utterance.text
+					DisplayServer.tts_speak($Utterance.text, voice[0], $HSliderVolume.value, $HSliderPitch.value, $HSliderRate.value, id, false)
 			id += 1
 			
 func _on_button_int_speak_pressed():
 	if !OS.has_feature("web"):
 		if $Tree.get_selected():
 			$Log.text += "utterance %d interrupt\n" % [id]
-			ut_map[id] = DisplayServer.clipboard_get()
-			DisplayServer.tts_speak(DisplayServer.clipboard_get(), $Tree.get_selected().get_metadata(0), $HSliderVolume.value, $HSliderPitch.value, $HSliderRate.value, id, true)
+			match current_state:
+				0, 1:
+					ut_map[id] = DisplayServer.clipboard_get()
+					DisplayServer.tts_speak(DisplayServer.clipboard_get(), $Tree.get_selected().get_metadata(0), $HSliderVolume.value, $HSliderPitch.value, $HSliderRate.value, id, true)
+				2:
+					ut_map[id] = $Utterance.text
+					DisplayServer.tts_speak($Utterance.text, $Tree.get_selected().get_metadata(0), $HSliderVolume.value, $HSliderPitch.value, $HSliderRate.value, id, true)
 			id += 1
 		else:
 			OS.alert("Select voice.")
@@ -118,8 +198,13 @@ func _on_button_int_speak_pressed():
 		var voice = DisplayServer.tts_get_voices_for_language("en")
 		if !voice.is_empty():
 			$Log.text += "utterance %d interrupt\n" % [id]
-			ut_map[id] = DisplayServer.clipboard_get()
-			DisplayServer.tts_speak(DisplayServer.clipboard_get(), voice[0], $HSliderVolume.value, $HSliderPitch.value, $HSliderRate.value, id, true)
+			match current_state:
+				0, 1:
+					ut_map[id] = DisplayServer.clipboard_get()
+					DisplayServer.tts_speak(DisplayServer.clipboard_get(), voice[0], $HSliderVolume.value, $HSliderPitch.value, $HSliderRate.value, id, true)
+				2:
+					ut_map[id] = $Utterance.text
+					DisplayServer.tts_speak($Utterance.text, voice[0], $HSliderVolume.value, $HSliderPitch.value, $HSliderRate.value, id, true)
 			id += 1
 			
 func _on_button_clear_log_pressed():
