@@ -9,4 +9,19 @@ Web build will spam for clipboard access as it's required to work currently.
 
 PC build is recommended as it'll be able to read from clipboard in the background. No internet connection needed.
 
-Current problems are comments in `main.gd`, but it's completely functional.
+Current problems are commented in `main.gd`, but it's completely functional.
+
+# interrupt, queue, and manual modes
+This application works differently based on which mode you are in (changed by pressing tab)
+
+- **interrupt**
+
+Will automatically interrupt current voice on Ctrl+c, only reads off clipboard.
+
+- **queue**
+
+Will put all clipboards into a queue, only reads off clipboard but allows you to add non-sequential text to it.
+
+- **manual**
+
+Ignores clipboard, only reads from what you put in the text editor and then hit speak, space or R
