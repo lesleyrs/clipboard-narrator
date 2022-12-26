@@ -11,6 +11,8 @@ PC build is recommended as it'll be able to read from clipboard in the backgroun
 
 Current problems are commented in `main.gd`, but it's completely functional.
 
+Inside the application press `h` to get a tts explanation. Copying the same text back to back does not work, press `r` for that.
+
 # interrupt, queue, and manual modes
 This application works differently based on which mode you are in (changed by pressing tab)
 
