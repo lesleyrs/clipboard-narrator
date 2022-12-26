@@ -19,13 +19,14 @@ var current_title = "INTERRUPT MODE"
 # save clipboard in array for going back in history?
 # allow forcing english by default setting after saving
 # tabs for seperate text editor maybe?
+# web build cuts off before finishing help text
 
 # Note: On Windows and Linux (X11), utterance text can use SSML markup.
 # SSML support is engine and voice dependent. If the engine does not support SSML,
 # you should strip out all XML markup before calling tts_speak().
 
 func _ready():
-	DisplayServer.window_set_title("Clipboard Narrator %s" % current_title) # check after saving if it works
+	DisplayServer.window_set_title("Clipboard Narrator - %s" % current_title) # check after saving if it works
 	voices = DisplayServer.tts_get_voices()
 	var root = $Tree.create_item()
 	$Tree.set_hide_root(true)
@@ -39,13 +40,13 @@ func _ready():
 		child.set_metadata(0, v["id"])
 		child.set_text(1, v["language"])
 	if OS.has_feature("web"):
-		$Log.text += "\nWeb build needs window focus to read clipboard.\n"
+		$Log.text += "\nWeb build needs window focus to read clipboard.\nCurrently English only.\nPC build recommended.\n"
 	elif voices.size() == 1:
 		$Log.text += "\n%d voice available\n" % [voices.size()]
 	elif voices.size() > 1:
 		$Log.text += "\n%d voices available\n" % [voices.size()]
 			
-	$Log.text += "=======\n"
+	$Log.text += "=======================\n"
 
 	DisplayServer.tts_set_utterance_callback(DisplayServer.TTS_UTTERANCE_STARTED, Callable(self, "_on_utterance_start"))
 	DisplayServer.tts_set_utterance_callback(DisplayServer.TTS_UTTERANCE_ENDED, Callable(self, "_on_utterance_end"))
@@ -54,8 +55,20 @@ func _ready():
 	set_process(true) # what's the purpose of this? low processor mode on or off?
 	
 func _unhandled_input(_event):
-	DisplayServer.window_set_title("Clipboard Narrator %s" % current_title)
-	if Input.is_action_just_pressed("tts_tab") and !$Utterance.has_focus():
+	DisplayServer.window_set_title("Clipboard Narrator - %s" % current_title)
+	if Input.is_action_just_pressed("tts_shift_tab") and !$Utterance.has_focus():
+		match current_state:
+			0:
+				current_state = MODES.MANUAL
+				current_title = "MANUAL MODE"
+			1:
+				current_state = MODES.INTERRUPT
+				current_title = "INTERRUPT MODE"
+			2:
+				current_state = MODES.QUEUE
+				current_title = "QUEUE MODE"
+				
+	elif Input.is_action_just_pressed("tts_tab") and !$Utterance.has_focus():
 		match current_state:
 			0:
 				current_state = MODES.QUEUE
@@ -66,7 +79,7 @@ func _unhandled_input(_event):
 			2:
 				current_state = MODES.INTERRUPT
 				current_title = "INTERRUPT MODE"
-		
+				
 	if Input.is_action_just_pressed("tts_space") and !DisplayServer.tts_is_speaking():
 		$ButtonSpeak.emit_signal("pressed")
 		
@@ -221,15 +234,23 @@ func _on_h_slider_volume_value_changed(value):
 
 func _on_button_demo_pressed():
 	var voice = DisplayServer.tts_get_voices_for_language("en")
+	var help_text = \
+"Tab or Shift-Tab to change modes (in title bar).
+Enter or I to enter text. Escape to unfocus text editor.
+Space to start/pause. S to stop. R to repeat. H for help.
+Z-X-C keys to focus sliders, Shift for faster speed.
+
+Note: The granularity of pitch, rate, and volume is engine and voice dependent. Values may be truncated."
+
 	if !voice.is_empty():
 		if OS.has_feature("web"):
-			ut_map[id] = "Copy text to activate text to speech, copying the same text back to back does not work.\nWeb build can't read clipboard if window isn't in focus and defaults to English, PC build is recommended.\n"
-			DisplayServer.tts_speak("Copy text to activate text to speech, copying the same text back to back does not work.\nWeb build can't read clipboard if window isn't in focus and defaults to English, PC build is recommended.\n", voice[0], 50, 1, 1, id)
+			ut_map[id] = help_text
+			DisplayServer.tts_speak(help_text, voice[0], 50, 1, 1, id)
 			id += 1
 			
 		if !OS.has_feature("web"):
-			ut_map[id] = "Copy text to activate text to speech, copying the same text back to back does not work."
-			DisplayServer.tts_speak("Copy text to activate text to speech, copying the same text back to back does not work.", voice[0], 50, 1, 1, id)
+			ut_map[id] = help_text
+			DisplayServer.tts_speak(help_text, voice[0], 50, 1, 1, id)
 			id += 1
 
 func _on_line_edit_filter_name_text_changed(_new_text):
