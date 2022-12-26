@@ -18,12 +18,12 @@ This application works differently based on which mode you are in (changed by pr
 
 - **interrupt**
 
-Will automatically interrupt current voice on Ctrl+c, only reads off clipboard.
+Will immediately interrupt current voice with `Ctrl-c`, and only reads off clipboard.
 
 - **queue**
 
-Will put all clipboards into a queue, only reads off clipboard but allows you to add non-sequential text to it.
+Will put all clipboards into a queue using `Ctrl-c`, only reads off clipboard but allows you to add non-sequential text to it.
 
 - **manual**
 
-Ignores clipboard, only reads from what you put in the text editor and then hit speak, space or R
+Ignores clipboard, only reads from what you put in the text editor and then hit `speak`, `space` or `r`.
