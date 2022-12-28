@@ -5,20 +5,21 @@ var ut_map = {}
 var voices
 var last_copy = DisplayServer.clipboard_get()
 enum MODES { INTERRUPT, QUEUE, MANUAL }
-var current_state = MODES.INTERRUPT
+var current_mode = MODES.INTERRUPT
 var current_title = "INTERRUPT MODE"
 
 # TODO
-# allow hidpi good for gui or not?
 # RenderingServer.set_default_clear_color() colorpicker?
-# add theme and font, find out best anchors and window settings, 2d scaling is bugged right now
-# mini mode with always on top, google icons w/ borderless (atm glitchy and moves when opened)
+# add logo/icon/theme/font/anchors/window settings/hidpi/always on top toggle?
+# allow forcing english by default setting after saving, try linux primary clipboard + test linux html
+# save clipboard in array for going back in history 1-0 keys? pause toggle with selecting 1 word
+# don't allow activating a button with space and hovering it with space?
+# no smart word wrap mode for textedit https://github.com/godotengine/godot/issues/3985
+# font oversampling bug with canvas mode https://github.com/godotengine/godot/issues/56399
 # don't interrupt before voice ended/cancelled, interrupting voice breaks the yellow highlighting
 # disable scrolling if speaking or why is scroll bar glitchy/forced to bottom?
-# no smart word wrap mode for textedit https://github.com/godotengine/godot/issues/3985
-# save clipboard in array for going back in history?
-# allow forcing english by default setting after saving
-# web build cuts off before finishing help text, very buggy
+# web build cuts off speech before finishing help text, and following higlight rarely works.
+# what is the cyclic resource error
 
 # Note: On Windows and Linux (X11), utterance text can use SSML markup.
 # SSML support is engine and voice dependent. If the engine does not support SSML,
@@ -39,7 +40,7 @@ func _ready():
 		child.set_metadata(0, v["id"])
 		child.set_text(1, v["language"])
 	if OS.has_feature("web"):
-		$Log.text += "\nWeb build needs window focus to read clipboard.\nCurrently English only.\nPC build recommended.\n"
+		$Log.text += "\nEnglish voice available\n"
 	elif voices.size() == 1:
 		$Log.text += "\n%d voice available\n" % [voices.size()]
 	elif voices.size() > 1:
@@ -51,33 +52,50 @@ func _ready():
 	DisplayServer.tts_set_utterance_callback(DisplayServer.TTS_UTTERANCE_ENDED, Callable(self, "_on_utterance_end"))
 	DisplayServer.tts_set_utterance_callback(DisplayServer.TTS_UTTERANCE_CANCELED, Callable(self, "_on_utterance_error"))
 	DisplayServer.tts_set_utterance_callback(DisplayServer.TTS_UTTERANCE_BOUNDARY, Callable(self, "_on_utterance_boundary"))
-	set_process(true) # what's the purpose of this? low processor mode on or off?
 	
 func _unhandled_input(_event):
 	DisplayServer.window_set_title("Clipboard Narrator - %s" % current_title)
 	if Input.is_action_just_pressed("tts_shift_tab") and !$Utterance.has_focus():
-		match current_state:
-			0:
-				current_state = MODES.MANUAL
-				current_title = "MANUAL MODE"
-			1:
-				current_state = MODES.INTERRUPT
-				current_title = "INTERRUPT MODE"
-			2:
-				current_state = MODES.QUEUE
-				current_title = "QUEUE MODE"
+		var voice = DisplayServer.tts_get_voices_for_language("en")
+		if !voice.is_empty():
+			match current_mode:
+				0:
+					current_mode = MODES.MANUAL
+					current_title = "MANUAL MODE"
+					ut_map[id] = "MANUAL MODE"
+					DisplayServer.tts_speak("MANUAL MODE", voice[0], $HSliderVolume.value, $HSliderPitch.value, $HSliderRate.value, id, true)
+				1:
+					current_mode = MODES.INTERRUPT
+					current_title = "INTERRUPT MODE"
+					ut_map[id] = "INTERRUPT MODE"
+					DisplayServer.tts_speak("INTERRUPT MODE", voice[0], $HSliderVolume.value, $HSliderPitch.value, $HSliderRate.value, id, true)
+				2:
+					current_mode = MODES.QUEUE
+					current_title = "QUEUE MODE"
+					ut_map[id] = "QUEUE MODE"
+					DisplayServer.tts_speak("QUEUE MODE", voice[0], $HSliderVolume.value, $HSliderPitch.value, $HSliderRate.value, id, true)
+		id += 1
 				
 	elif Input.is_action_just_pressed("tts_tab") and !$Utterance.has_focus():
-		match current_state:
-			0:
-				current_state = MODES.QUEUE
-				current_title = "QUEUE MODE"
-			1:
-				current_state = MODES.MANUAL
-				current_title = "MANUAL MODE"
-			2:
-				current_state = MODES.INTERRUPT
-				current_title = "INTERRUPT MODE"
+		var voice = DisplayServer.tts_get_voices_for_language("en")
+		if !voice.is_empty():
+			match current_mode:
+				0:
+					current_mode = MODES.QUEUE
+					current_title = "QUEUE MODE"
+					ut_map[id] = "QUEUE MODE"
+					DisplayServer.tts_speak("QUEUE MODE", voice[0], $HSliderVolume.value, $HSliderPitch.value, $HSliderRate.value, id, true)
+				1:
+					current_mode = MODES.MANUAL
+					current_title = "MANUAL MODE"
+					ut_map[id] = "MANUAL MODE"
+					DisplayServer.tts_speak("MANUAL MODE", voice[0], $HSliderVolume.value, $HSliderPitch.value, $HSliderRate.value, id, true)
+				2:
+					current_mode = MODES.INTERRUPT
+					current_title = "INTERRUPT MODE"
+					ut_map[id] = "INTERRUPT MODE"
+					DisplayServer.tts_speak("INTERRUPT MODE", voice[0], $HSliderVolume.value, $HSliderPitch.value, $HSliderRate.value, id, true)
+		id += 1
 				
 	if Input.is_action_just_pressed("tts_space") and !DisplayServer.tts_is_speaking():
 		$ButtonSpeak.emit_signal("pressed")
@@ -86,10 +104,12 @@ func _unhandled_input(_event):
 		$ButtonPause.emit_signal("pressed")
 	
 	if Input.is_action_just_pressed("tts_escape"):
+#		get_parent().gui_release_focus() # not needed because all focus disabled, otherwise use this
 		$Utterance.release_focus()
 		
-	if Input.is_action_just_pressed("tts_enter") or Input.is_action_just_pressed("tts_i"):
-		$Utterance.grab_focus.call_deferred()
+	if !$Utterance.has_focus():
+		if Input.is_action_just_pressed("tts_enter") or Input.is_action_just_pressed("tts_i"):
+			$Utterance.grab_focus.call_deferred()
 		
 	if Input.is_action_just_pressed("tts_z"):
 		$HSliderRate.grab_focus.call_deferred()
@@ -120,7 +140,7 @@ func _unhandled_input(_event):
 		
 func _process(_delta):
 	if DisplayServer.clipboard_get() != last_copy:
-		match current_state:
+		match current_mode:
 			0:
 				$ButtonIntSpeak.emit_signal("pressed")
 				last_copy = DisplayServer.clipboard_get()
@@ -167,7 +187,7 @@ func _on_button_speak_pressed():
 	if !OS.has_feature("web"):
 		if $Tree.get_selected():
 			$Log.text += "utterance %d queried\n" % [id]
-			match current_state:
+			match current_mode:
 				0, 1:
 					ut_map[id] = DisplayServer.clipboard_get()
 					DisplayServer.tts_speak(DisplayServer.clipboard_get(), $Tree.get_selected().get_metadata(0), $HSliderVolume.value, $HSliderPitch.value, $HSliderRate.value, id, false)
@@ -182,7 +202,7 @@ func _on_button_speak_pressed():
 		var voice = DisplayServer.tts_get_voices_for_language("en")
 		if !voice.is_empty():
 			$Log.text += "utterance %d queried\n" % [id]
-			match current_state:
+			match current_mode:
 				0, 1:
 					ut_map[id] = DisplayServer.clipboard_get()
 					DisplayServer.tts_speak(DisplayServer.clipboard_get(), voice[0], $HSliderVolume.value, $HSliderPitch.value, $HSliderRate.value, id, false)
@@ -195,7 +215,7 @@ func _on_button_int_speak_pressed():
 	if !OS.has_feature("web"):
 		if $Tree.get_selected():
 			$Log.text += "utterance %d interrupt\n" % [id]
-			match current_state:
+			match current_mode:
 				0, 1:
 					ut_map[id] = DisplayServer.clipboard_get()
 					DisplayServer.tts_speak(DisplayServer.clipboard_get(), $Tree.get_selected().get_metadata(0), $HSliderVolume.value, $HSliderPitch.value, $HSliderRate.value, id, true)
@@ -210,7 +230,7 @@ func _on_button_int_speak_pressed():
 		var voice = DisplayServer.tts_get_voices_for_language("en")
 		if !voice.is_empty():
 			$Log.text += "utterance %d interrupt\n" % [id]
-			match current_state:
+			match current_mode:
 				0, 1:
 					ut_map[id] = DisplayServer.clipboard_get()
 					DisplayServer.tts_speak(DisplayServer.clipboard_get(), voice[0], $HSliderVolume.value, $HSliderPitch.value, $HSliderRate.value, id, true)
@@ -233,24 +253,11 @@ func _on_h_slider_volume_value_changed(value):
 
 func _on_button_demo_pressed():
 	var voice = DisplayServer.tts_get_voices_for_language("en")
-	var help_text = \
-"Tab or Shift-Tab to change modes (in title bar).
-Enter to focus text editor. Escape to lose focus.
-Space to start/pause. S to stop. R to repeat. H for help.
-Z-X-C keys to focus sliders, Shift for faster speed.
-
-Note: The granularity of pitch, rate, and volume is engine and voice dependent. Values may be truncated."
-
+	
 	if !voice.is_empty():
-		if OS.has_feature("web"):
-			ut_map[id] = help_text
-			DisplayServer.tts_speak(help_text, voice[0], 50, 1, 1, id)
-			id += 1
-			
-		if !OS.has_feature("web"):
-			ut_map[id] = help_text
-			DisplayServer.tts_speak(help_text, voice[0], 50, 1, 1, id)
-			id += 1
+		ut_map[id] = $Utterance.placeholder_text
+		DisplayServer.tts_speak($Utterance.placeholder_text, voice[0], 50, 1, 1, id)
+		id += 1
 
 func _on_line_edit_filter_name_text_changed(_new_text):
 	$Tree.clear()
@@ -262,3 +269,6 @@ func _on_line_edit_filter_name_text_changed(_new_text):
 			child.set_metadata(0, v["id"])
 			child.set_text(1, v["language"])
 			child.select(0)
+			
+func _on_log_text_set():
+	$Log.scroll_vertical = $Log.text.length()

@@ -23,22 +23,22 @@ metadata/_edit_lock_ = true
 layout_mode = 1
 offset_left = 128.0
 offset_top = 192.0
-offset_right = 195.063
+offset_right = 224.0
 offset_bottom = 223.0
 placeholder_text = "Name"
 
 [node name="LineEditFilterLang" type="LineEdit" parent="."]
 layout_mode = 0
-offset_left = 224.0
+offset_left = 256.0
 offset_top = 192.0
-offset_right = 322.0
+offset_right = 354.0
 offset_bottom = 223.0
 placeholder_text = "Language"
 
 [node name="Label" type="Label" parent="LineEditFilterLang"]
 layout_mode = 0
-offset_left = -192.0
-offset_right = -128.0
+offset_left = -224.0
+offset_right = -160.0
 offset_bottom = 32.0
 text = "Filter:"
 
@@ -57,6 +57,7 @@ offset_left = 384.0
 offset_top = 32.0
 offset_right = 544.0
 offset_bottom = 63.0
+focus_mode = 0
 text = "How to use"
 
 [node name="ButtonIntSpeak" type="Button" parent="."]
@@ -65,6 +66,7 @@ offset_left = 384.0
 offset_top = 96.0
 offset_right = 463.0
 offset_bottom = 127.0
+focus_mode = 0
 text = "Interrupt"
 
 [node name="ButtonSpeak" type="Button" parent="."]
@@ -73,6 +75,7 @@ offset_left = 480.0
 offset_top = 96.0
 offset_right = 544.0
 offset_bottom = 127.0
+focus_mode = 0
 text = "Speak"
 
 [node name="ButtonStop" type="Button" parent="."]
@@ -81,6 +84,7 @@ offset_left = 384.0
 offset_top = 160.0
 offset_right = 448.0
 offset_bottom = 191.0
+focus_mode = 0
 text = "Stop"
 
 [node name="ButtonPause" type="Button" parent="."]
@@ -89,6 +93,7 @@ offset_left = 480.0
 offset_top = 160.0
 offset_right = 544.0
 offset_bottom = 191.0
+focus_mode = 0
 toggle_mode = true
 text = "Pause"
 
@@ -96,13 +101,11 @@ text = "Pause"
 layout_mode = 0
 offset_left = 128.0
 offset_top = 256.0
-offset_right = 327.0
+offset_right = 320.0
 offset_bottom = 272.0
-min_value = 0.1
-max_value = 10.0
+max_value = 2.0
 step = 0.05
-value = 1.1
-exp_edit = true
+value = 1.0
 
 [node name="Label" type="Label" parent="HSliderRate"]
 layout_mode = 0
@@ -119,10 +122,10 @@ offset_bottom = 26.0
 text = "1.00x"
 
 [node name="HSliderPitch" type="HSlider" parent="."]
-layout_mode = 1
+layout_mode = 0
 offset_left = 128.0
 offset_top = 288.0
-offset_right = 326.0
+offset_right = 320.0
 offset_bottom = 304.0
 max_value = 2.0
 step = 0.05
@@ -143,10 +146,10 @@ offset_bottom = 26.0
 text = "1.00x"
 
 [node name="HSliderVolume" type="HSlider" parent="."]
-layout_mode = 1
+layout_mode = 0
 offset_left = 128.0
 offset_top = 320.0
-offset_right = 329.0
+offset_right = 320.0
 offset_bottom = 336.0
 value = 50.0
 
@@ -168,15 +171,15 @@ text = "50%"
 layout_mode = 0
 offset_left = 32.0
 offset_top = 384.0
-offset_right = 480.0
+offset_right = 544.0
 offset_bottom = 640.0
-placeholder_text = "Ctrl+c anywhere to activate tts w/o window focus (PC)
-Tab or Shift-Tab to change modes (in title bar).
-Enter to focus text editor. Escape to lose focus.
-Space to start/pause. S to stop. R to repeat. H for help.
-Z-X-C keys to focus sliders, Shift for faster speed.
+placeholder_text = "Welcome to Clipboard Narrator.
 
-Note: The granularity of pitch, rate, and volume is engine and voice dependent. Values may be truncated."
+Press Ctrl+c anywhere to activate tts.
+Tab or Shift-Tab to change modes.
+Enter to focus text editor. Escape to lose focus.
+Space to toggle pause. S to stop. R to repeat. H for help.
+Z-X-C keys to focus sliders, Shift for faster speed."
 wrap_mode = 1
 draw_spaces = true
 
@@ -195,7 +198,7 @@ offset_right = 864.0
 offset_bottom = 640.0
 theme_override_styles/normal = SubResource("StyleBoxFlat_xstnx")
 bbcode_enabled = true
-scroll_following = true
+scroll_active = false
 
 [node name="Log" type="TextEdit" parent="."]
 layout_mode = 0
@@ -216,6 +219,7 @@ clip_contents = true
 layout_mode = 0
 offset_right = 224.0
 offset_bottom = 31.0
+focus_mode = 0
 text = "Clear"
 
 [connection signal="text_changed" from="LineEditFilterName" to="." method="_on_line_edit_filter_name_text_changed"]
@@ -228,4 +232,5 @@ text = "Clear"
 [connection signal="value_changed" from="HSliderRate" to="." method="_on_h_slider_rate_value_changed"]
 [connection signal="value_changed" from="HSliderPitch" to="." method="_on_h_slider_pitch_value_changed"]
 [connection signal="value_changed" from="HSliderVolume" to="." method="_on_h_slider_volume_value_changed"]
+[connection signal="text_set" from="Log" to="." method="_on_log_text_set"]
 [connection signal="pressed" from="Log/ButtonClearLog" to="." method="_on_button_clear_log_pressed"]
