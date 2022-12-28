@@ -11,14 +11,15 @@ var stylebox_flat = StyleBoxFlat.new()
 
 # TODO
 # add logo/icon, see current state of embedding pck
+# why does it color the black borders from canvas_mode? what's causing it?
 # turn speak and pause into 1 button and keep the held down + change text? add always on top toggle + resize
-# why does node2d have black bars but control nodes don't? also how to update clear_color without resize
 # try linux primary clipboard + test linux html
 # allow forcing english by default setting after saving + colorpicker reset default right click? + default mode loading+title + size/always on top keeping
 # save clipboard in array for going back in history 1-0 keys? pause toggle with selecting 1 word
 # how to limit "fit content height" size and allow scrolling somehow
 # don't interrupt before voice ended/cancelled, interrupting voice breaks the yellow highlighting
 # web build cuts off speech before finishing help text, and following higlight rarely works.
+# non english voices not shown in list because it can't find them.
 # no smart word wrap mode for textedit https://github.com/godotengine/godot/issues/3985
 # font oversampling bug with canvas mode https://github.com/godotengine/godot/issues/56399 it works on current layout though
 
@@ -36,7 +37,7 @@ func _ready():
 	stylebox_flat.bg_color = $ColorPickerButton.color
 	$RichTextLabel.add_theme_stylebox_override("normal", stylebox_flat)
 	
-	DisplayServer.window_set_title("Clipboard Narrator - %s" % current_title) # check after saving if it works
+	DisplayServer.window_set_title("Clipboard Narrator - %s" % current_title)
 	voices = DisplayServer.tts_get_voices()
 	var root = $Tree.create_item()
 	$Tree.set_hide_root(true)
@@ -170,10 +171,8 @@ func _process(_delta):
 		
 	$ButtonPause.set_pressed(DisplayServer.tts_is_paused())
 	if DisplayServer.tts_is_speaking():
-#		$Label.modulate = Color(1, 0, 0)
 		$Label.text = "Speaking..."
 	else:
-#		$Label.modulate = Color(1, 1, 1)
 		$Label.text = "Waiting for input..."
 
 func _on_utterance_boundary(pos, id):
@@ -296,7 +295,7 @@ func _on_log_text_set():
 func _on_color_picker_button_color_changed(color):
 	RenderingServer.set_default_clear_color($ColorPickerButton.color)
 	stylebox_flat.bg_color = $ColorPickerButton.color
-
+	
 func _on_button_fullscreen_pressed():
 	if DisplayServer.window_get_mode() != DisplayServer.WINDOW_MODE_FULLSCREEN \
 	and DisplayServer.window_get_mode() != DisplayServer.WINDOW_MODE_MAXIMIZED: # temporary?
