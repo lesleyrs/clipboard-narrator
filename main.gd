@@ -7,25 +7,33 @@ var last_copy = DisplayServer.clipboard_get()
 enum MODES { INTERRUPT, QUEUE, MANUAL }
 var current_mode = MODES.INTERRUPT
 var current_title = "INTERRUPT MODE"
+var stylebox_flat = StyleBoxFlat.new()
 
 # TODO
-# RenderingServer.set_default_clear_color() colorpicker?
 # add logo/icon/theme/font/anchors/window settings/hidpi/always on top toggle?
-# allow forcing english by default setting after saving, try linux primary clipboard + test linux html
+# try linux primary clipboard + test linux html
+# allow forcing english by default setting after saving + colorpicker reset default right click?
 # save clipboard in array for going back in history 1-0 keys? pause toggle with selecting 1 word
-# don't allow activating a button with space and hovering it with space?
+# how to limit "fit content height" size and allow scrolling somehow
 # no smart word wrap mode for textedit https://github.com/godotengine/godot/issues/3985
 # font oversampling bug with canvas mode https://github.com/godotengine/godot/issues/56399
 # don't interrupt before voice ended/cancelled, interrupting voice breaks the yellow highlighting
-# disable scrolling if speaking or why is scroll bar glitchy/forced to bottom?
 # web build cuts off speech before finishing help text, and following higlight rarely works.
-# what is the cyclic resource error
 
 # Note: On Windows and Linux (X11), utterance text can use SSML markup.
 # SSML support is engine and voice dependent. If the engine does not support SSML,
 # you should strip out all XML markup before calling tts_speak().
 
 func _ready():
+	$ColorPickerButton.color = "4d4d4d"
+	stylebox_flat.border_width_bottom = 3
+	stylebox_flat.border_width_left = 3
+	stylebox_flat.border_width_right = 3
+	stylebox_flat.border_width_top = 3
+	stylebox_flat.border_color = Color.CRIMSON
+	stylebox_flat.bg_color = $ColorPickerButton.color
+	$RichTextLabel.add_theme_stylebox_override("normal", stylebox_flat)
+	
 	DisplayServer.window_set_title("Clipboard Narrator - %s" % current_title) # check after saving if it works
 	voices = DisplayServer.tts_get_voices()
 	var root = $Tree.create_item()
@@ -104,8 +112,7 @@ func _unhandled_input(_event):
 		$ButtonPause.emit_signal("pressed")
 	
 	if Input.is_action_just_pressed("tts_escape"):
-#		get_parent().gui_release_focus() # not needed because all focus disabled, otherwise use this
-		$Utterance.release_focus()
+		get_parent().gui_release_focus()
 		
 	if !$Utterance.has_focus():
 		if Input.is_action_just_pressed("tts_enter") or Input.is_action_just_pressed("tts_i"):
@@ -119,6 +126,12 @@ func _unhandled_input(_event):
 		
 	if Input.is_action_just_pressed("tts_c"):
 		$HSliderVolume.grab_focus.call_deferred()
+		
+	if Input.is_action_just_pressed("tts_n"):
+		$LineEditFilterName.grab_focus.call_deferred()
+		
+	if Input.is_action_just_pressed("tts_l"):
+		$LineEditFilterLang.grab_focus.call_deferred()
 		
 	if Input.is_action_pressed("tts_shift"):
 		$HSliderRate.step = 0.5
@@ -152,10 +165,10 @@ func _process(_delta):
 		
 	$ButtonPause.set_pressed(DisplayServer.tts_is_paused())
 	if DisplayServer.tts_is_speaking():
-		$Label.modulate = Color(1, 0, 0)
+#		$Label.modulate = Color(1, 0, 0)
 		$Label.text = "Speaking..."
 	else:
-		$Label.modulate = Color(1, 1, 1)
+#		$Label.modulate = Color(1, 1, 1)
 		$Label.text = "Waiting for input..."
 
 func _on_utterance_boundary(pos, id):
@@ -171,10 +184,12 @@ func _on_utterance_end(id):
 
 func _on_utterance_error(id):
 	$RichTextLabel.text = ""
-	$Log.text += "utterance %d cancelled\n" % [id]
+	$Log.text += "utterance %d canceled\n" % [id]
 	ut_map.erase(id)
 	
 func _on_button_stop_pressed():
+	if !DisplayServer.tts_is_speaking():
+		$RichTextLabel.text = ""
 	DisplayServer.tts_stop()
 
 func _on_button_pause_pressed():
@@ -272,3 +287,7 @@ func _on_line_edit_filter_name_text_changed(_new_text):
 			
 func _on_log_text_set():
 	$Log.scroll_vertical = $Log.text.length()
+	
+func _on_color_picker_button_color_changed(color):
+	RenderingServer.set_default_clear_color($ColorPickerButton.color)
+	stylebox_flat.bg_color = $ColorPickerButton.color

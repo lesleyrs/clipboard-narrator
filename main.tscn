@@ -1,13 +1,6 @@
-[gd_scene load_steps=3 format=3 uid="uid://dgo7v2i3mbmtb"]
+[gd_scene load_steps=2 format=3 uid="uid://dgo7v2i3mbmtb"]
 
 [ext_resource type="Script" path="res://main.gd" id="1_qjk75"]
-
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_xstnx"]
-draw_center = false
-border_width_left = 3
-border_width_top = 3
-border_width_right = 3
-border_width_bottom = 3
 
 [node name="Main" type="Control"]
 layout_mode = 3
@@ -21,191 +14,200 @@ metadata/_edit_lock_ = true
 
 [node name="LineEditFilterName" type="LineEdit" parent="."]
 layout_mode = 1
-offset_left = 128.0
-offset_top = 192.0
-offset_right = 224.0
-offset_bottom = 223.0
-placeholder_text = "Name"
+offset_left = 96.0
+offset_top = 256.0
+offset_right = 208.0
+offset_bottom = 287.0
+placeholder_text = "N: Name"
 
 [node name="LineEditFilterLang" type="LineEdit" parent="."]
 layout_mode = 0
-offset_left = 256.0
-offset_top = 192.0
-offset_right = 354.0
-offset_bottom = 223.0
-placeholder_text = "Language"
+offset_left = 224.0
+offset_top = 256.0
+offset_right = 338.0
+offset_bottom = 287.0
+placeholder_text = "L: Language"
 
 [node name="Label" type="Label" parent="LineEditFilterLang"]
 layout_mode = 0
-offset_left = -224.0
-offset_right = -160.0
+offset_left = -208.0
+offset_right = -144.0
 offset_bottom = 32.0
+theme_override_colors/font_shadow_color = Color(0, 0, 0, 1)
+theme_override_constants/shadow_outline_size = 1
 text = "Filter:"
 
 [node name="Tree" type="Tree" parent="."]
 layout_mode = 0
-offset_left = 32.0
-offset_top = 32.0
-offset_right = 352.0
-offset_bottom = 160.0
+offset_left = 16.0
+offset_top = 324.0
+offset_right = 336.0
+offset_bottom = 644.0
 focus_mode = 0
 columns = 2
 
 [node name="ButtonDemo" type="Button" parent="."]
 layout_mode = 0
-offset_left = 384.0
-offset_top = 32.0
-offset_right = 544.0
-offset_bottom = 63.0
+offset_left = 16.0
+offset_top = 68.0
+offset_right = 336.0
+offset_bottom = 99.0
 focus_mode = 0
-text = "How to use"
+text = "H: How to use"
 
 [node name="ButtonIntSpeak" type="Button" parent="."]
 layout_mode = 1
-offset_left = 384.0
-offset_top = 96.0
-offset_right = 463.0
-offset_bottom = 127.0
+offset_left = 16.0
+offset_top = 128.0
+offset_right = 160.0
+offset_bottom = 159.0
 focus_mode = 0
-text = "Interrupt"
+text = "R: Interrupt"
 
 [node name="ButtonSpeak" type="Button" parent="."]
 layout_mode = 0
-offset_left = 480.0
-offset_top = 96.0
-offset_right = 544.0
-offset_bottom = 127.0
+offset_left = 192.0
+offset_top = 128.0
+offset_right = 336.0
+offset_bottom = 159.0
 focus_mode = 0
-text = "Speak"
+text = "Space: Speak"
 
 [node name="ButtonStop" type="Button" parent="."]
 layout_mode = 1
-offset_left = 384.0
-offset_top = 160.0
-offset_right = 448.0
-offset_bottom = 191.0
+offset_left = 16.0
+offset_top = 192.0
+offset_right = 160.0
+offset_bottom = 223.0
 focus_mode = 0
-text = "Stop"
+text = "S: Stop"
 
 [node name="ButtonPause" type="Button" parent="."]
 layout_mode = 1
-offset_left = 480.0
-offset_top = 160.0
-offset_right = 544.0
-offset_bottom = 191.0
+offset_left = 192.0
+offset_top = 192.0
+offset_right = 336.0
+offset_bottom = 223.0
 focus_mode = 0
 toggle_mode = true
-text = "Pause"
+text = "Space: Pause"
 
 [node name="HSliderRate" type="HSlider" parent="."]
 layout_mode = 0
-offset_left = 128.0
-offset_top = 256.0
-offset_right = 320.0
-offset_bottom = 272.0
+offset_left = 256.0
+offset_top = 8.0
+offset_right = 416.0
+offset_bottom = 24.0
 max_value = 2.0
 step = 0.05
 value = 1.0
 
 [node name="Label" type="Label" parent="HSliderRate"]
 layout_mode = 0
-offset_left = -96.0
-offset_right = -56.0
-offset_bottom = 26.0
-text = "Rate:"
+offset_left = -64.0
+offset_top = -8.0
+offset_bottom = 24.0
+theme_override_colors/font_shadow_color = Color(0, 0, 0, 1)
+theme_override_constants/shadow_outline_size = 1
+text = "Z: Rate:"
+vertical_alignment = 1
 
 [node name="Value" type="Label" parent="HSliderRate"]
 layout_mode = 1
-offset_left = 224.0
-offset_right = 265.0
-offset_bottom = 26.0
+offset_left = 160.0
+offset_top = -8.0
+offset_right = 224.0
+offset_bottom = 24.0
+theme_override_colors/font_shadow_color = Color(0, 0, 0, 1)
+theme_override_constants/shadow_outline_size = 1
 text = "1.00x"
+horizontal_alignment = 1
+vertical_alignment = 1
 
 [node name="HSliderPitch" type="HSlider" parent="."]
 layout_mode = 0
-offset_left = 128.0
-offset_top = 288.0
-offset_right = 320.0
-offset_bottom = 304.0
+offset_left = 576.0
+offset_top = 8.0
+offset_right = 736.0
+offset_bottom = 24.0
 max_value = 2.0
 step = 0.05
 value = 1.0
 
 [node name="Label" type="Label" parent="HSliderPitch"]
 layout_mode = 1
-offset_left = -96.0
-offset_right = -52.0
-offset_bottom = 26.0
-text = "Pitch:"
+offset_left = -64.0
+offset_top = -8.0
+offset_right = -2.0
+offset_bottom = 24.0
+theme_override_colors/font_shadow_color = Color(0, 0, 0, 1)
+theme_override_constants/shadow_outline_size = 1
+text = "X: Pitch:"
+vertical_alignment = 1
 
 [node name="Value" type="Label" parent="HSliderPitch"]
 layout_mode = 1
-offset_left = 224.0
-offset_right = 265.0
-offset_bottom = 26.0
+offset_left = 160.0
+offset_top = -8.0
+offset_right = 224.0
+offset_bottom = 24.0
+theme_override_colors/font_shadow_color = Color(0, 0, 0, 1)
+theme_override_constants/shadow_outline_size = 1
 text = "1.00x"
+horizontal_alignment = 1
+vertical_alignment = 1
 
 [node name="HSliderVolume" type="HSlider" parent="."]
 layout_mode = 0
-offset_left = 128.0
-offset_top = 320.0
-offset_right = 320.0
-offset_bottom = 336.0
+offset_left = 896.0
+offset_top = 8.0
+offset_right = 1056.0
+offset_bottom = 24.0
 value = 50.0
 
 [node name="Label" type="Label" parent="HSliderVolume"]
 layout_mode = 1
 offset_left = -96.0
-offset_right = -32.0
-offset_bottom = 26.0
-text = "Volume:"
+offset_top = -8.0
+offset_right = -14.0
+offset_bottom = 24.0
+theme_override_colors/font_shadow_color = Color(0, 0, 0, 1)
+theme_override_constants/shadow_outline_size = 1
+text = "C: Volume:"
+vertical_alignment = 1
 
 [node name="Value" type="Label" parent="HSliderVolume"]
 layout_mode = 1
-offset_left = 224.0
-offset_right = 264.0
-offset_bottom = 26.0
+offset_left = 160.0
+offset_top = -8.0
+offset_right = 224.0
+offset_bottom = 24.0
+theme_override_colors/font_shadow_color = Color(0, 0, 0, 1)
+theme_override_constants/shadow_outline_size = 1
 text = "50%"
+horizontal_alignment = 1
+vertical_alignment = 1
 
 [node name="Utterance" type="TextEdit" parent="."]
 layout_mode = 0
-offset_left = 32.0
-offset_top = 384.0
-offset_right = 544.0
-offset_bottom = 640.0
+offset_left = 352.0
+offset_top = 68.0
+offset_right = 896.0
+offset_bottom = 644.0
 placeholder_text = "Welcome to Clipboard Narrator.
 
-Press Ctrl+c anywhere to activate tts.
-Tab or Shift-Tab to change modes.
-Enter to focus text editor. Escape to lose focus.
-Space to toggle pause. S to stop. R to repeat. H for help.
-Z-X-C keys to focus sliders, Shift for faster speed."
+Press Ctrl-C anywhere to activate text to speech.
+Tab or Shift-Tab to change modes. Shift to increase slider speed.
+Enter and Escape to focus and unfocus text editor."
 wrap_mode = 1
 draw_spaces = true
 
-[node name="Label" type="Label" parent="."]
-layout_mode = 0
-offset_left = 576.0
-offset_right = 864.0
-offset_bottom = 32.0
-text = "Waiting for input..."
-
-[node name="RichTextLabel" type="RichTextLabel" parent="."]
-layout_mode = 0
-offset_left = 576.0
-offset_top = 32.0
-offset_right = 864.0
-offset_bottom = 640.0
-theme_override_styles/normal = SubResource("StyleBoxFlat_xstnx")
-bbcode_enabled = true
-scroll_active = false
-
 [node name="Log" type="TextEdit" parent="."]
 layout_mode = 0
-offset_left = 896.0
-offset_top = 32.0
-offset_right = 1120.0
-offset_bottom = 640.0
+offset_left = 912.0
+offset_top = 68.0
+offset_right = 1136.0
+offset_bottom = 644.0
 focus_mode = 0
 editable = false
 context_menu_enabled = false
@@ -222,6 +224,34 @@ offset_bottom = 31.0
 focus_mode = 0
 text = "Clear"
 
+[node name="ColorPickerButton" type="ColorPickerButton" parent="."]
+layout_mode = 0
+offset_right = 160.0
+offset_bottom = 32.0
+focus_mode = 0
+edit_alpha = false
+
+[node name="Label" type="Label" parent="."]
+layout_mode = 0
+offset_right = 160.0
+offset_bottom = 32.0
+theme_override_colors/font_shadow_color = Color(0, 0, 0, 1)
+theme_override_constants/shadow_outline_size = 1
+text = "Waiting for input..."
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="RichTextLabel" type="RichTextLabel" parent="."]
+layout_mode = 0
+offset_top = 32.0
+offset_right = 1152.0
+offset_bottom = 64.0
+theme_override_colors/font_shadow_color = Color(0, 0, 0, 1)
+theme_override_constants/shadow_outline_size = 1
+bbcode_enabled = true
+fit_content_height = true
+scroll_active = false
+
 [connection signal="text_changed" from="LineEditFilterName" to="." method="_on_line_edit_filter_name_text_changed"]
 [connection signal="text_changed" from="LineEditFilterLang" to="." method="_on_line_edit_filter_name_text_changed"]
 [connection signal="pressed" from="ButtonDemo" to="." method="_on_button_demo_pressed"]
@@ -234,3 +264,4 @@ text = "Clear"
 [connection signal="value_changed" from="HSliderVolume" to="." method="_on_h_slider_volume_value_changed"]
 [connection signal="text_set" from="Log" to="." method="_on_log_text_set"]
 [connection signal="pressed" from="Log/ButtonClearLog" to="." method="_on_button_clear_log_pressed"]
+[connection signal="color_changed" from="ColorPickerButton" to="." method="_on_color_picker_button_color_changed"]
