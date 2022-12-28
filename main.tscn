@@ -48,12 +48,21 @@ columns = 2
 
 [node name="ButtonDemo" type="Button" parent="."]
 layout_mode = 0
-offset_left = 16.0
+offset_left = 192.0
 offset_top = 68.0
 offset_right = 336.0
-offset_bottom = 99.0
+offset_bottom = 103.0
 focus_mode = 0
 text = "H: How to use"
+
+[node name="ButtonFullscreen" type="Button" parent="."]
+layout_mode = 1
+offset_left = 16.0
+offset_top = 68.0
+offset_right = 160.0
+offset_bottom = 103.0
+focus_mode = 0
+text = "F: Fullscreen"
 
 [node name="ButtonIntSpeak" type="Button" parent="."]
 layout_mode = 1
@@ -255,6 +264,7 @@ scroll_active = false
 [connection signal="text_changed" from="LineEditFilterName" to="." method="_on_line_edit_filter_name_text_changed"]
 [connection signal="text_changed" from="LineEditFilterLang" to="." method="_on_line_edit_filter_name_text_changed"]
 [connection signal="pressed" from="ButtonDemo" to="." method="_on_button_demo_pressed"]
+[connection signal="pressed" from="ButtonFullscreen" to="." method="_on_button_fullscreen_pressed"]
 [connection signal="pressed" from="ButtonIntSpeak" to="." method="_on_button_int_speak_pressed"]
 [connection signal="pressed" from="ButtonSpeak" to="." method="_on_button_speak_pressed"]
 [connection signal="pressed" from="ButtonStop" to="." method="_on_button_stop_pressed"]

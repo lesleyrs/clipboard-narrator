@@ -16,6 +16,14 @@ config/features=PackedStringArray("4.0", "GL Compatibility")
 run/low_processor_mode=true
 config/icon="res://icon.svg"
 
+[display]
+
+window/stretch/mode="canvas_items"
+
+[gui]
+
+theme/custom_font="res://Andika-Regular.ttf"
+
 [input]
 
 tts_space={
@@ -91,6 +99,11 @@ tts_n={
 tts_l={
 "deadzone": 0.5,
 "events": [Object(InputEventKey,"resource_local_to_scene":false,"resource_name":"","device":0,"window_id":0,"alt_pressed":false,"shift_pressed":false,"ctrl_pressed":false,"meta_pressed":false,"pressed":false,"keycode":76,"physical_keycode":0,"unicode":0,"echo":false,"script":null)
+]
+}
+tts_f={
+"deadzone": 0.5,
+"events": [Object(InputEventKey,"resource_local_to_scene":false,"resource_name":"","device":0,"window_id":0,"alt_pressed":false,"shift_pressed":false,"ctrl_pressed":false,"meta_pressed":false,"pressed":false,"keycode":70,"physical_keycode":0,"unicode":0,"echo":false,"script":null)
 ]
 }
 

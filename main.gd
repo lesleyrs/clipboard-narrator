@@ -10,15 +10,16 @@ var current_title = "INTERRUPT MODE"
 var stylebox_flat = StyleBoxFlat.new()
 
 # TODO
-# add logo/icon/theme/font/anchors/window settings/hidpi/always on top toggle?
+# add logo/icon, see current state of embedding pck
+# why does node2d have black bars but control nodes don't? also how to update clear_color without resize
 # try linux primary clipboard + test linux html
-# allow forcing english by default setting after saving + colorpicker reset default right click?
+# allow forcing english by default setting after saving + colorpicker reset default right click? + default mode loading+title + size/always on top keeping
 # save clipboard in array for going back in history 1-0 keys? pause toggle with selecting 1 word
 # how to limit "fit content height" size and allow scrolling somehow
-# no smart word wrap mode for textedit https://github.com/godotengine/godot/issues/3985
-# font oversampling bug with canvas mode https://github.com/godotengine/godot/issues/56399
 # don't interrupt before voice ended/cancelled, interrupting voice breaks the yellow highlighting
 # web build cuts off speech before finishing help text, and following higlight rarely works.
+# no smart word wrap mode for textedit https://github.com/godotengine/godot/issues/3985
+# font oversampling bug with canvas mode https://github.com/godotengine/godot/issues/56399 it works on current layout though
 
 # Note: On Windows and Linux (X11), utterance text can use SSML markup.
 # SSML support is engine and voice dependent. If the engine does not support SSML,
@@ -110,7 +111,7 @@ func _unhandled_input(_event):
 		
 	elif Input.is_action_just_pressed("tts_space") and DisplayServer.tts_is_speaking():
 		$ButtonPause.emit_signal("pressed")
-	
+		
 	if Input.is_action_just_pressed("tts_escape"):
 		get_parent().gui_release_focus()
 		
@@ -150,6 +151,9 @@ func _unhandled_input(_event):
 		
 	if Input.is_action_just_pressed("tts_s"):
 		$ButtonStop.emit_signal("pressed")
+		
+	if Input.is_action_just_pressed("tts_f"):
+		$ButtonFullscreen.emit_signal("pressed")
 		
 func _process(_delta):
 	if DisplayServer.clipboard_get() != last_copy:
@@ -291,3 +295,10 @@ func _on_log_text_set():
 func _on_color_picker_button_color_changed(color):
 	RenderingServer.set_default_clear_color($ColorPickerButton.color)
 	stylebox_flat.bg_color = $ColorPickerButton.color
+
+func _on_button_fullscreen_pressed():
+	if DisplayServer.window_get_mode() != DisplayServer.WINDOW_MODE_FULLSCREEN \
+	and DisplayServer.window_get_mode() != DisplayServer.WINDOW_MODE_MAXIMIZED: # temporary?
+		DisplayServer.window_set_mode(DisplayServer.WINDOW_MODE_FULLSCREEN)
+	elif DisplayServer.window_get_mode() != DisplayServer.WINDOW_MODE_WINDOWED:
+		DisplayServer.window_set_mode(DisplayServer.WINDOW_MODE_WINDOWED)
