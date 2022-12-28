@@ -11,17 +11,16 @@ var stylebox_flat = StyleBoxFlat.new()
 
 # TODO
 # add logo/icon, see current state of embedding pck
-# why does it color the black borders from canvas_mode? what's causing it?
 # turn speak and pause into 1 button and keep the held down + change text? add always on top toggle + resize
 # try linux primary clipboard + test linux html
 # allow forcing english by default setting after saving + colorpicker reset default right click? + default mode loading+title + size/always on top keeping
 # save clipboard in array for going back in history 1-0 keys? pause toggle with selecting 1 word
-# how to limit "fit content height" size and allow scrolling somehow
-# don't interrupt before voice ended/cancelled, interrupting voice breaks the yellow highlighting
+# how to limit "fit content height" size and allow scrolling richtextlabel somehow
 # web build cuts off speech before finishing help text, and following higlight rarely works.
-# non english voices not shown in list because it can't find them.
-# no smart word wrap mode for textedit https://github.com/godotengine/godot/issues/3985
-# font oversampling bug with canvas mode https://github.com/godotengine/godot/issues/56399 it works on current layout though
+# https://github.com/godotengine/godot-demo-projects/pull/744 can't find non-english voices on windows at least
+# https://github.com/godotengine/godot/issues/39144 interrupt voice breaks the yellow highlight + can't scroll at all?
+# https://github.com/godotengine/godot/issues/3985 no smart word wrap mode for textedit
+# https://github.com/godotengine/godot/issues/56399 font oversampling bug canvas mode (works curr layout)
 
 # Note: On Windows and Linux (X11), utterance text can use SSML markup.
 # SSML support is engine and voice dependent. If the engine does not support SSML,
