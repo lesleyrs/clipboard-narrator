@@ -11,6 +11,7 @@ var stylebox_flat = StyleBoxFlat.new()
 
 # TODO
 # add logo/icon, see current state of embedding pck
+# turn speak and pause into 1 button and keep the held down + change text? add always on top toggle + resize
 # why does node2d have black bars but control nodes don't? also how to update clear_color without resize
 # try linux primary clipboard + test linux html
 # allow forcing english by default setting after saving + colorpicker reset default right click? + default mode loading+title + size/always on top keeping
