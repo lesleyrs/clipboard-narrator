@@ -15,17 +15,17 @@ metadata/_edit_lock_ = true
 [node name="LineEditFilterName" type="LineEdit" parent="."]
 layout_mode = 1
 offset_left = 96.0
-offset_top = 256.0
+offset_top = 336.0
 offset_right = 208.0
-offset_bottom = 287.0
+offset_bottom = 371.0
 placeholder_text = "N: Name"
 
 [node name="LineEditFilterLang" type="LineEdit" parent="."]
 layout_mode = 0
 offset_left = 224.0
-offset_top = 256.0
-offset_right = 338.0
-offset_bottom = 287.0
+offset_top = 336.0
+offset_right = 336.0
+offset_bottom = 371.0
 placeholder_text = "L: Language"
 
 [node name="Label" type="Label" parent="LineEditFilterLang"]
@@ -40,7 +40,7 @@ text = "Filter:"
 [node name="Tree" type="Tree" parent="."]
 layout_mode = 0
 offset_left = 16.0
-offset_top = 324.0
+offset_top = 384.0
 offset_right = 336.0
 offset_bottom = 644.0
 focus_mode = 0
@@ -49,57 +49,86 @@ columns = 2
 [node name="ButtonDemo" type="Button" parent="."]
 layout_mode = 0
 offset_left = 192.0
-offset_top = 68.0
+offset_top = 72.0
 offset_right = 336.0
-offset_bottom = 103.0
+offset_bottom = 107.0
 focus_mode = 0
 text = "H: How to use"
 
 [node name="ButtonFullscreen" type="Button" parent="."]
 layout_mode = 1
 offset_left = 16.0
-offset_top = 68.0
+offset_top = 128.0
 offset_right = 160.0
-offset_bottom = 103.0
+offset_bottom = 160.0
 focus_mode = 0
+toggle_mode = true
 text = "F: Fullscreen"
+
+[node name="ButtonOnTop" type="Button" parent="."]
+layout_mode = 1
+offset_left = 16.0
+offset_top = 184.0
+offset_right = 160.0
+offset_bottom = 219.0
+focus_mode = 0
+toggle_mode = true
+text = "T: Always on Top"
+
+[node name="ButtonFolder" type="Button" parent="."]
+layout_mode = 1
+offset_left = 16.0
+offset_top = 72.0
+offset_right = 160.0
+offset_bottom = 107.0
+focus_mode = 0
+text = "O: Save Folder"
 
 [node name="ButtonIntSpeak" type="Button" parent="."]
 layout_mode = 1
-offset_left = 16.0
+offset_left = 192.0
 offset_top = 128.0
-offset_right = 160.0
-offset_bottom = 159.0
+offset_right = 336.0
+offset_bottom = 163.0
 focus_mode = 0
 text = "R: Interrupt"
 
-[node name="ButtonSpeak" type="Button" parent="."]
-layout_mode = 0
-offset_left = 192.0
-offset_top = 128.0
-offset_right = 336.0
-offset_bottom = 159.0
-focus_mode = 0
-text = "Space: Speak"
-
 [node name="ButtonStop" type="Button" parent="."]
 layout_mode = 1
-offset_left = 16.0
-offset_top = 192.0
-offset_right = 160.0
-offset_bottom = 223.0
+offset_left = 192.0
+offset_top = 240.0
+offset_right = 336.0
+offset_bottom = 275.0
 focus_mode = 0
 text = "S/Esc: Stop"
 
-[node name="ButtonPause" type="Button" parent="."]
+[node name="ButtonToggle" type="Button" parent="."]
 layout_mode = 1
 offset_left = 192.0
-offset_top = 192.0
+offset_top = 184.0
 offset_right = 336.0
-offset_bottom = 223.0
+offset_bottom = 219.0
 focus_mode = 0
-toggle_mode = true
-text = "Space: Pause"
+text = "Space: Speak"
+
+[node name="OptionButton" type="OptionButton" parent="."]
+layout_mode = 0
+offset_left = 16.0
+offset_top = 240.0
+offset_right = 160.0
+offset_bottom = 275.0
+focus_mode = 0
+
+[node name="LinesLabel" type="Label" parent="."]
+layout_mode = 0
+offset_left = 16.0
+offset_top = 288.0
+offset_right = 336.0
+offset_bottom = 323.0
+text = "0 lines copied, 0 total"
+horizontal_alignment = 1
+vertical_alignment = 1
+autowrap_mode = 3
 
 [node name="HSliderRate" type="HSlider" parent="."]
 layout_mode = 0
@@ -200,7 +229,7 @@ vertical_alignment = 1
 [node name="Utterance" type="TextEdit" parent="."]
 layout_mode = 0
 offset_left = 352.0
-offset_top = 68.0
+offset_top = 72.0
 offset_right = 896.0
 offset_bottom = 644.0
 placeholder_text = "Welcome to Clipboard Narrator.
@@ -214,7 +243,7 @@ draw_spaces = true
 [node name="Log" type="TextEdit" parent="."]
 layout_mode = 0
 offset_left = 912.0
-offset_top = 68.0
+offset_top = 72.0
 offset_right = 1136.0
 offset_bottom = 644.0
 focus_mode = 0
@@ -229,7 +258,7 @@ wrap_mode = 1
 clip_contents = true
 layout_mode = 0
 offset_right = 224.0
-offset_bottom = 31.0
+offset_bottom = 35.0
 focus_mode = 0
 text = "Clear"
 
@@ -266,10 +295,12 @@ scroll_active = false
 [connection signal="text_changed" from="LineEditFilterLang" to="." method="_on_line_edit_filter_name_text_changed"]
 [connection signal="pressed" from="ButtonDemo" to="." method="_on_button_demo_pressed"]
 [connection signal="pressed" from="ButtonFullscreen" to="." method="_on_button_fullscreen_pressed"]
+[connection signal="pressed" from="ButtonOnTop" to="." method="_on_button_on_top_pressed"]
+[connection signal="pressed" from="ButtonFolder" to="." method="_on_button_folder_pressed"]
 [connection signal="pressed" from="ButtonIntSpeak" to="." method="_on_button_int_speak_pressed"]
-[connection signal="pressed" from="ButtonSpeak" to="." method="_on_button_speak_pressed"]
 [connection signal="pressed" from="ButtonStop" to="." method="_on_button_stop_pressed"]
-[connection signal="pressed" from="ButtonPause" to="." method="_on_button_pause_pressed"]
+[connection signal="pressed" from="ButtonToggle" to="." method="_on_button_toggle_pressed"]
+[connection signal="item_selected" from="OptionButton" to="." method="_on_option_button_item_selected"]
 [connection signal="value_changed" from="HSliderRate" to="." method="_on_h_slider_rate_value_changed"]
 [connection signal="value_changed" from="HSliderPitch" to="." method="_on_h_slider_pitch_value_changed"]
 [connection signal="value_changed" from="HSliderVolume" to="." method="_on_h_slider_volume_value_changed"]

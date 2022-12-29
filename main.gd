@@ -6,20 +6,18 @@ var voices
 var last_copy = DisplayServer.clipboard_get()
 enum MODES { INTERRUPT, QUEUE, MANUAL }
 var current_mode = MODES.INTERRUPT
+var mode_switch = false
 var current_title = "INTERRUPT MODE"
 var stylebox_flat = StyleBoxFlat.new()
 var size_changed = false
 var total_lines = 0
-var mode_switch = false
 
 # TODO
-# either stop richtextlabel auto scrolling because of highlight, or make it move along with it
-# add logo/icon, see current state of embedding pck, keep mode or expand mode?
-# turn speak and pause into 1 button and keep the held down + change text? add always on top toggle + resize
-# save clipboard in array for going back in history 1-0 keys?
-# try linux primary clipboard in addition to normal clipboard? + test linux html
-# allow forcing english by default setting after saving + colorpicker reset default right click? + default mode loading+title + size/always on top keeping
-# allow changing sliders while speaking without stopping
+# add logo/icon, see current state of embedding pck, add releases to github, optionbutton text low resolution?
+# save clipboard in array 1-0 keys history, try linux primary clipboard extra + test linux html
+# save total_lines/lang/colorpicker/sliders/mode/title/size/ontop/check all settings for loading
+
+# allow changing slider while speaking and stop richtext moving scrollbar or make it follow without stopping
 # web build cuts off speech before finishing help text, and following higlight rarely works.
 # https://github.com/godotengine/godot-demo-projects/pull/744 can't find non-english voices on windows at least
 # https://github.com/godotengine/godot/issues/39144 interrupt voice breaks the yellow highlight + can't scroll at all?
@@ -31,6 +29,15 @@ var mode_switch = false
 # you should strip out all XML markup before calling tts_speak().
 
 func _ready():
+	$OptionButton.add_item("P: 854x480")
+	$OptionButton.add_item("P: 960x540")
+	$OptionButton.add_item("P: 1024x576")
+	$OptionButton.add_item("P: 1152x648")
+	$OptionButton.add_item("P: 1280x720")
+	$OptionButton.add_item("P: 1366x768")
+	$OptionButton.add_item("P: 1600x900")
+	$OptionButton.select(3)
+	
 	$ColorPickerButton.color = "4d4d4d"
 	stylebox_flat.bg_color = $ColorPickerButton.color
 	stylebox_flat.border_width_bottom = 1
@@ -39,7 +46,7 @@ func _ready():
 	stylebox_flat.border_width_right = 1
 	stylebox_flat.border_color = Color.WHITE
 	$RichTextLabel.add_theme_stylebox_override("normal", stylebox_flat)
-	
+
 	DisplayServer.window_set_title("Clipboard Narrator - %s" % current_title)
 	voices = DisplayServer.tts_get_voices()
 	var root = $Tree.create_item()
@@ -59,14 +66,14 @@ func _ready():
 		$Log.text += "\n%d voice available\n" % [voices.size()]
 	elif voices.size() > 1:
 		$Log.text += "\n%d voices available\n" % [voices.size()]
-			
+
 	$Log.text += "=======================\n"
 
 	DisplayServer.tts_set_utterance_callback(DisplayServer.TTS_UTTERANCE_STARTED, Callable(self, "_on_utterance_start"))
 	DisplayServer.tts_set_utterance_callback(DisplayServer.TTS_UTTERANCE_ENDED, Callable(self, "_on_utterance_end"))
 	DisplayServer.tts_set_utterance_callback(DisplayServer.TTS_UTTERANCE_CANCELED, Callable(self, "_on_utterance_error"))
 	DisplayServer.tts_set_utterance_callback(DisplayServer.TTS_UTTERANCE_BOUNDARY, Callable(self, "_on_utterance_boundary"))
-	
+
 func _unhandled_input(_event):
 	DisplayServer.window_set_title("Clipboard Narrator - %s" % current_title)
 	if Input.is_action_just_pressed("tts_shift_tab") and !$Utterance.has_focus():
@@ -90,7 +97,7 @@ func _unhandled_input(_event):
 					DisplayServer.tts_speak("QUEUE MODE", voice[0], $HSliderVolume.value, $HSliderPitch.value, $HSliderRate.value, id, true)
 			mode_switch = true
 		id += 1
-				
+
 	elif Input.is_action_just_pressed("tts_tab") and !$Utterance.has_focus():
 		var voice = DisplayServer.tts_get_voices_for_language("en")
 		if !voice.is_empty():
@@ -112,41 +119,41 @@ func _unhandled_input(_event):
 					DisplayServer.tts_speak("INTERRUPT MODE", voice[0], $HSliderVolume.value, $HSliderPitch.value, $HSliderRate.value, id, true)
 			mode_switch = true
 		id += 1
-				
+
 	if Input.is_action_just_pressed("tts_space") and !DisplayServer.tts_is_speaking():
-		$ButtonSpeak.emit_signal("pressed")
-		
+		$ButtonToggle.emit_signal("pressed")
+
 	elif Input.is_action_just_pressed("tts_space") and DisplayServer.tts_is_speaking():
-		$ButtonPause.emit_signal("pressed")
-		
+		$ButtonToggle.emit_signal("pressed")
+
 	if Input.is_action_just_pressed("tts_escape"):
 		if get_parent().gui_get_focus_owner() != null:
 			get_parent().gui_release_focus()
 		else:
 			$ButtonStop.emit_signal("pressed")
-		
+
 	if !$Utterance.has_focus():
 		if Input.is_action_just_pressed("tts_enter") or Input.is_action_just_pressed("tts_i"):
 			$Utterance.grab_focus.call_deferred()
-		
+
 	if Input.is_action_just_pressed("tts_z"):
 		$HSliderRate.grab_focus.call_deferred()
-		
+
 	if Input.is_action_just_pressed("tts_x"):
 		$HSliderPitch.grab_focus.call_deferred()
-		
+
 	if Input.is_action_just_pressed("tts_c"):
 		$HSliderVolume.grab_focus.call_deferred()
-		
+
 	if Input.is_action_just_pressed("tts_n"):
 		$LineEditFilterName.grab_focus.call_deferred()
-		
+
 	if Input.is_action_just_pressed("tts_l"):
 		$LineEditFilterLang.grab_focus.call_deferred()
-		
+
 	if Input.is_action_just_pressed("tts_u"):
 		$RichTextLabel.grab_focus.call_deferred()
-		
+
 	if Input.is_action_pressed("tts_shift"):
 		$HSliderRate.step = 0.5
 		$HSliderPitch.step = 0.5
@@ -155,18 +162,29 @@ func _unhandled_input(_event):
 		$HSliderRate.step = 0.05
 		$HSliderPitch.step = 0.05
 		$HSliderVolume.step = 1
-		
+
 	if Input.is_action_just_pressed("tts_h"):
 		$ButtonDemo.emit_signal("pressed")
-		
+
 	if Input.is_action_just_pressed("tts_r"):
 		$ButtonIntSpeak.emit_signal("pressed")
-		
+
 	if Input.is_action_just_pressed("tts_s"):
 		$ButtonStop.emit_signal("pressed")
-		
+
 	if Input.is_action_just_pressed("tts_f"):
 		$ButtonFullscreen.emit_signal("pressed")
+
+	if Input.is_action_just_pressed("tts_t"):
+		$ButtonOnTop.emit_signal("pressed")
+		
+	if Input.is_action_just_pressed("tts_o"):
+		$ButtonFolder.emit_signal("pressed")
+		
+	if Input.is_action_just_pressed("tts_p"):
+		if DisplayServer.window_get_mode() != DisplayServer.WINDOW_MODE_FULLSCREEN \
+		and DisplayServer.window_get_mode() != DisplayServer.WINDOW_MODE_MAXIMIZED:
+			$OptionButton.show_popup()
 		
 func resize_label():
 	if mode_switch == false:
@@ -180,14 +198,9 @@ func resize_label():
 	var lines_copied = " lines copied, "
 	if $RichTextLabel.get_line_count() == 1:
 		lines_copied = " line copied, "
-	var utt_text = "Welcome to Clipboard Narrator.
-
-Press Ctrl-C anywhere to start text to speech, Copy 1 word to stop.
-Tab or Shift-Tab to change modes. Shift to increase slider speed.
-Enter and Escape to focus and unfocus text editor.\n\n" + str($RichTextLabel.get_line_count()) + lines_copied + str(total_lines) + " total"
-	$Utterance.placeholder_text = utt_text
+	$LinesLabel.text = str($RichTextLabel.get_line_count()) + lines_copied + str(total_lines) + " total"
 	size_changed = true
-		
+
 func _process(_delta):
 	if DisplayServer.clipboard_get() != last_copy:
 		match current_mode:
@@ -200,15 +213,14 @@ func _process(_delta):
 					last_copy = DisplayServer.clipboard_get()
 			1:
 				if DisplayServer.clipboard_get().count(" ") > 1 or $Utterance.has_focus():
-					$ButtonSpeak.emit_signal("pressed")
+					$ButtonToggle.emit_signal("pressed")
 					last_copy = DisplayServer.clipboard_get()
 				else:
 					$ButtonStop.emit_signal("pressed")
 					last_copy = DisplayServer.clipboard_get()
 			2:
 				last_copy = DisplayServer.clipboard_get()
-		
-	$ButtonPause.set_pressed(DisplayServer.tts_is_paused())
+
 	if DisplayServer.tts_is_speaking():
 		$Label.text = "Speaking..."
 	else:
@@ -218,15 +230,18 @@ func _on_utterance_boundary(pos, id):
 	$RichTextLabel.text = "[bgcolor=yellow][color=black]" + ut_map[id].substr(0, pos) + "[/color][/bgcolor]" + ut_map[id].substr(pos, -1)
 	if size_changed == false:
 		resize_label()
-	
+
 func _on_utterance_start(id):
 	$Log.text += "utterance %d started\n" % [id]
-	
+	$ButtonToggle.text = "Space: Pause"
+
 func _on_utterance_end(id):
 	$RichTextLabel.text = "[bgcolor=yellow][color=black]" + ut_map[id] + "[/color][/bgcolor]"
 	$Log.text += "utterance %d ended\n" % [id]
 	ut_map.erase(id)
 	size_changed = false
+	DisplayServer.tts_resume()
+	$ButtonToggle.text = "Space: Speak"
 
 func _on_utterance_error(id):
 	$RichTextLabel.text = ""
@@ -234,50 +249,58 @@ func _on_utterance_error(id):
 	ut_map.erase(id)
 	size_changed = false
 	$RichTextLabel.text = "    U: Focus"
-	
+	DisplayServer.tts_resume()
+	$ButtonToggle.text = "Space: Speak"
+
 func _on_button_stop_pressed():
-	if !DisplayServer.tts_is_speaking():
-		$RichTextLabel.text = "    U: Focus"
 	DisplayServer.tts_stop()
 	$RichTextLabel.release_focus()
 	$RichTextLabel.size.y = 27
 	$RichTextLabel.scroll_active = false
-	
-func _on_button_pause_pressed():
-	if $ButtonPause.pressed:
+	$RichTextLabel.text = "    U: Focus"
+	$ButtonToggle.text = "Space: Speak"
+
+func _on_button_toggle_pressed():
+	if DisplayServer.tts_is_speaking():
 		DisplayServer.tts_pause()
-	else:
+		$ButtonToggle.text = "Space: Speak"
+	elif DisplayServer.tts_is_paused():
 		DisplayServer.tts_resume()
-		
-func _on_button_speak_pressed():
-	if !OS.has_feature("web"):
-		if $Tree.get_selected():
-			$Log.text += "utterance %d queried\n" % [id]
-			match current_mode:
-				0, 1:
-					ut_map[id] = DisplayServer.clipboard_get()
-					DisplayServer.tts_speak(DisplayServer.clipboard_get(), $Tree.get_selected().get_metadata(0), $HSliderVolume.value, $HSliderPitch.value, $HSliderRate.value, id, false)
-				2:
-					ut_map[id] = $Utterance.text
-					DisplayServer.tts_speak($Utterance.text, $Tree.get_selected().get_metadata(0), $HSliderVolume.value, $HSliderPitch.value, $HSliderRate.value, id, false)
-			id += 1
-		else:
-			OS.alert("Select voice.")
-			
-	if OS.has_feature("web"):
-		var voice = DisplayServer.tts_get_voices_for_language("en")
-		if !voice.is_empty():
-			$Log.text += "utterance %d queried\n" % [id]
-			match current_mode:
-				0, 1:
-					ut_map[id] = DisplayServer.clipboard_get()
-					DisplayServer.tts_speak(DisplayServer.clipboard_get(), voice[0], $HSliderVolume.value, $HSliderPitch.value, $HSliderRate.value, id, false)
-				2:
-					ut_map[id] = $Utterance.text
-					DisplayServer.tts_speak($Utterance.text, voice[0], $HSliderVolume.value, $HSliderPitch.value, $HSliderRate.value, id, false)
-			id += 1
-			
+		$ButtonToggle.text = "Space: Pause"
+	elif !DisplayServer.tts_is_speaking() or DisplayServer.tts_is_paused():
+		$ButtonToggle.text = "Space: Pause"
+		if !OS.has_feature("web"):
+			if $Tree.get_selected():
+				$Log.text += "utterance %d queried\n" % [id]
+				match current_mode:
+					0, 1:
+						ut_map[id] = DisplayServer.clipboard_get()
+						DisplayServer.tts_speak(DisplayServer.clipboard_get(), $Tree.get_selected().get_metadata(0), $HSliderVolume.value, $HSliderPitch.value, $HSliderRate.value, id, false)
+					2:
+						ut_map[id] = $Utterance.text
+						DisplayServer.tts_speak($Utterance.text, $Tree.get_selected().get_metadata(0), $HSliderVolume.value, $HSliderPitch.value, $HSliderRate.value, id, false)
+				id += 1
+			else:
+				OS.alert("Select voice.")
+
+		if OS.has_feature("web"):
+			var voice = DisplayServer.tts_get_voices_for_language("en")
+			if !voice.is_empty():
+				$Log.text += "utterance %d queried\n" % [id]
+				match current_mode:
+					0, 1:
+						ut_map[id] = DisplayServer.clipboard_get()
+						DisplayServer.tts_speak(DisplayServer.clipboard_get(), voice[0], $HSliderVolume.value, $HSliderPitch.value, $HSliderRate.value, id, false)
+					2:
+						ut_map[id] = $Utterance.text
+						DisplayServer.tts_speak($Utterance.text, voice[0], $HSliderVolume.value, $HSliderPitch.value, $HSliderRate.value, id, false)
+				id += 1
+
 func _on_button_int_speak_pressed():
+#	if DisplayServer.tts_is_speaking(): # bad workaround to fix higlight because then you have to press r twice.
+#		DisplayServer.tts_stop()
+#	else:
+#		$ButtonToggle.text = "Space: Pause"
 	if !OS.has_feature("web"):
 		if $Tree.get_selected():
 			$Log.text += "utterance %d interrupt\n" % [id]
@@ -291,7 +314,7 @@ func _on_button_int_speak_pressed():
 			id += 1
 		else:
 			OS.alert("Select voice.")
-			
+
 	if OS.has_feature("web"):
 		var voice = DisplayServer.tts_get_voices_for_language("en")
 		if !voice.is_empty():
@@ -304,7 +327,7 @@ func _on_button_int_speak_pressed():
 					ut_map[id] = $Utterance.text
 					DisplayServer.tts_speak($Utterance.text, voice[0], $HSliderVolume.value, $HSliderPitch.value, $HSliderRate.value, id, true)
 			id += 1
-			
+
 func _on_button_clear_log_pressed():
 	$Log.text = "\n"
 
@@ -319,10 +342,11 @@ func _on_h_slider_volume_value_changed(value):
 
 func _on_button_demo_pressed():
 	var voice = DisplayServer.tts_get_voices_for_language("en")
-	
+
 	if !voice.is_empty():
 		ut_map[id] = $Utterance.placeholder_text
 		DisplayServer.tts_speak($Utterance.placeholder_text, voice[0], 50, 1, 1, id)
+		$ButtonToggle.text = "Space: Pause"
 		id += 1
 
 func _on_line_edit_filter_name_text_changed(_new_text):
@@ -335,27 +359,66 @@ func _on_line_edit_filter_name_text_changed(_new_text):
 			child.set_metadata(0, v["id"])
 			child.set_text(1, v["language"])
 			child.select(0)
-			
+
 func _on_log_text_set():
 	$Log.scroll_vertical = $Log.text.length()
-	
+
 func _on_color_picker_button_color_changed(color):
 	RenderingServer.set_default_clear_color($ColorPickerButton.color)
 	stylebox_flat.bg_color = $ColorPickerButton.color
 	
-func _on_button_fullscreen_pressed():
-	if DisplayServer.window_get_mode() != DisplayServer.WINDOW_MODE_FULLSCREEN \
-	and DisplayServer.window_get_mode() != DisplayServer.WINDOW_MODE_MAXIMIZED: # temporary?
-		DisplayServer.window_set_mode(DisplayServer.WINDOW_MODE_FULLSCREEN)
-	elif DisplayServer.window_get_mode() != DisplayServer.WINDOW_MODE_WINDOWED:
-		DisplayServer.window_set_mode(DisplayServer.WINDOW_MODE_WINDOWED)
-
-
 func _on_rich_text_label_focus_entered():
 	stylebox_flat.border_width_bottom = 0
 	stylebox_flat.border_width_top = 0
 
-
 func _on_rich_text_label_focus_exited():
 	stylebox_flat.border_width_bottom = 1
 	stylebox_flat.border_width_top = 1
+	
+func _on_button_fullscreen_pressed():
+	if DisplayServer.window_get_mode() != DisplayServer.WINDOW_MODE_FULLSCREEN \
+	and DisplayServer.window_get_mode() != DisplayServer.WINDOW_MODE_MAXIMIZED \
+	and !DisplayServer.window_get_flag(DisplayServer.WINDOW_FLAG_ALWAYS_ON_TOP):
+		DisplayServer.window_set_mode(DisplayServer.WINDOW_MODE_FULLSCREEN)
+		$ButtonFullscreen.set_pressed(DisplayServer.window_get_mode() == DisplayServer.WINDOW_MODE_FULLSCREEN)
+		$ButtonOnTop.disabled = true
+		$OptionButton.disabled = true
+	elif DisplayServer.window_get_mode() != DisplayServer.WINDOW_MODE_WINDOWED:
+		DisplayServer.window_set_mode(DisplayServer.WINDOW_MODE_WINDOWED)
+		$ButtonFullscreen.set_pressed(DisplayServer.window_get_mode() == DisplayServer.WINDOW_MODE_FULLSCREEN)
+		$ButtonOnTop.disabled = false
+		$OptionButton.disabled = false
+
+func _on_button_on_top_pressed():
+	if !DisplayServer.window_get_flag(DisplayServer.WINDOW_FLAG_ALWAYS_ON_TOP) \
+	and DisplayServer.window_get_mode() != DisplayServer.WINDOW_MODE_FULLSCREEN \
+	and DisplayServer.window_get_mode() != DisplayServer.WINDOW_MODE_MAXIMIZED:
+		DisplayServer.window_set_flag(DisplayServer.WINDOW_FLAG_ALWAYS_ON_TOP, true)
+		$ButtonOnTop.set_pressed(DisplayServer.window_get_flag(DisplayServer.WINDOW_FLAG_ALWAYS_ON_TOP))
+		$ButtonFullscreen.disabled = true
+	elif DisplayServer.window_get_flag(DisplayServer.WINDOW_FLAG_ALWAYS_ON_TOP):
+		DisplayServer.window_set_flag(DisplayServer.WINDOW_FLAG_ALWAYS_ON_TOP, false)
+		$ButtonOnTop.set_pressed(DisplayServer.window_get_flag(DisplayServer.WINDOW_FLAG_ALWAYS_ON_TOP))
+		$ButtonFullscreen.disabled = false
+		
+func _on_option_button_item_selected(index):
+	var current_selected = index
+	
+	match current_selected:
+		0:
+			DisplayServer.window_set_size(Vector2(854, 480))
+		1:
+			DisplayServer.window_set_size(Vector2(960, 540))
+		2:
+			DisplayServer.window_set_size(Vector2(1024, 576))
+		3:
+			DisplayServer.window_set_size(Vector2(1152, 648))
+		4:
+			DisplayServer.window_set_size(Vector2(1280, 720))
+		5:
+			DisplayServer.window_set_size(Vector2(1366, 768))
+		6:
+			DisplayServer.window_set_size(Vector2(1600, 900))
+			
+func _on_button_folder_pressed():
+	OS.shell_open(ProjectSettings.globalize_path("user://"))
