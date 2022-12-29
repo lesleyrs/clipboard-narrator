@@ -5,9 +5,11 @@ Based on: https://github.com/godotengine/godot-demo-projects/pull/744
 
 I made this for myself to save me from doing more reading than needed, but I think it's a good tool anyone can make use of. Thx to [bruvzg](https://github.com/bruvzg) for making it possible! :+1:
 
-Web build will spam for clipboard access as it's required to work.
+![clipboard-narrator](https://user-images.githubusercontent.com/19632758/209919039-a4bc489e-7da1-4272-81be-cf920e1781db.png)
 
-PC build is recommended as it'll be able to read from clipboard in the background. No internet connection needed. Smart stopping voice added by copying 1[^1] word, this allows you to start and stop a voice without requiring window focus. Double click a word for faster copying.
+Web build will spam for clipboard access as it's required to use this effectively. Some things may not work on web either.
+
+PC build is highly recommended as it'll be able to read from clipboard in the background. No internet connection needed. Smart stopping voice added by copying 1[^1] word, this allows you to start and stop a voice without requiring window focus.
 
 Current problems are commented in [`main.gd`](main.gd#L15), but it's completely functional.
 
