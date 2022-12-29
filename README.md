@@ -13,7 +13,7 @@ PC build is highly recommended as it'll be able to read from clipboard in the ba
 
 Current problems are commented in [`main.gd`](main.gd#L15), but it's completely functional.
 
-Inside the application press `h` to get a tts explanation. Copying the same text back to back does not work, press `r` for that.
+Inside the application press `h` to get a tts explanation. Copying the same text back to back does not work, press `r` for that. The `i` key can also be used for entering text. Background colour picker is the button on the top left corner.
 
 # interrupt, queue, and manual modes
 This application works differently based on which mode you are in (changed by pressing tab or shift-tab)
