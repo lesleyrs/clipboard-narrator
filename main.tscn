@@ -89,7 +89,7 @@ offset_top = 192.0
 offset_right = 160.0
 offset_bottom = 223.0
 focus_mode = 0
-text = "S: Stop"
+text = "S/Esc: Stop"
 
 [node name="ButtonPause" type="Button" parent="."]
 layout_mode = 1
@@ -252,13 +252,14 @@ vertical_alignment = 1
 
 [node name="RichTextLabel" type="RichTextLabel" parent="."]
 layout_mode = 0
-offset_top = 32.0
+offset_top = 37.0
 offset_right = 1152.0
 offset_bottom = 64.0
+focus_mode = 2
 theme_override_colors/font_shadow_color = Color(0, 0, 0, 1)
 theme_override_constants/shadow_outline_size = 1
 bbcode_enabled = true
-fit_content_height = true
+text = "    U: Focus"
 scroll_active = false
 
 [connection signal="text_changed" from="LineEditFilterName" to="." method="_on_line_edit_filter_name_text_changed"]
@@ -275,3 +276,5 @@ scroll_active = false
 [connection signal="text_set" from="Log" to="." method="_on_log_text_set"]
 [connection signal="pressed" from="Log/ButtonClearLog" to="." method="_on_button_clear_log_pressed"]
 [connection signal="color_changed" from="ColorPickerButton" to="." method="_on_color_picker_button_color_changed"]
+[connection signal="focus_entered" from="RichTextLabel" to="." method="_on_rich_text_label_focus_entered"]
+[connection signal="focus_exited" from="RichTextLabel" to="." method="_on_rich_text_label_focus_exited"]

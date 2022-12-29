@@ -8,14 +8,18 @@ enum MODES { INTERRUPT, QUEUE, MANUAL }
 var current_mode = MODES.INTERRUPT
 var current_title = "INTERRUPT MODE"
 var stylebox_flat = StyleBoxFlat.new()
+var size_changed = false
+var total_lines = 0
+var mode_switch = false
 
 # TODO
-# add logo/icon, see current state of embedding pck
+# add logo/icon, see current state of embedding pck, keep mode or expand mode?
 # turn speak and pause into 1 button and keep the held down + change text? add always on top toggle + resize
 # try linux primary clipboard + test linux html
 # allow forcing english by default setting after saving + colorpicker reset default right click? + default mode loading+title + size/always on top keeping
 # save clipboard in array for going back in history 1-0 keys? pause toggle with selecting 1 word
 # how to limit "fit content height" size and allow scrolling richtextlabel somehow
+# allow changing sliders while speaking without stopping
 # web build cuts off speech before finishing help text, and following higlight rarely works.
 # https://github.com/godotengine/godot-demo-projects/pull/744 can't find non-english voices on windows at least
 # https://github.com/godotengine/godot/issues/39144 interrupt voice breaks the yellow highlight + can't scroll at all?
@@ -28,12 +32,12 @@ var stylebox_flat = StyleBoxFlat.new()
 
 func _ready():
 	$ColorPickerButton.color = "4d4d4d"
-	stylebox_flat.border_width_bottom = 3
-	stylebox_flat.border_width_left = 3
-	stylebox_flat.border_width_right = 3
-	stylebox_flat.border_width_top = 3
-	stylebox_flat.border_color = Color.CRIMSON
 	stylebox_flat.bg_color = $ColorPickerButton.color
+	stylebox_flat.border_width_bottom = 1
+	stylebox_flat.border_width_top = 1
+	stylebox_flat.border_width_left = 1
+	stylebox_flat.border_width_right = 1
+	stylebox_flat.border_color = Color.WHITE
 	$RichTextLabel.add_theme_stylebox_override("normal", stylebox_flat)
 	
 	DisplayServer.window_set_title("Clipboard Narrator - %s" % current_title)
@@ -84,6 +88,7 @@ func _unhandled_input(_event):
 					current_title = "QUEUE MODE"
 					ut_map[id] = "QUEUE MODE"
 					DisplayServer.tts_speak("QUEUE MODE", voice[0], $HSliderVolume.value, $HSliderPitch.value, $HSliderRate.value, id, true)
+			mode_switch = true
 		id += 1
 				
 	elif Input.is_action_just_pressed("tts_tab") and !$Utterance.has_focus():
@@ -105,6 +110,7 @@ func _unhandled_input(_event):
 					current_title = "INTERRUPT MODE"
 					ut_map[id] = "INTERRUPT MODE"
 					DisplayServer.tts_speak("INTERRUPT MODE", voice[0], $HSliderVolume.value, $HSliderPitch.value, $HSliderRate.value, id, true)
+			mode_switch = true
 		id += 1
 				
 	if Input.is_action_just_pressed("tts_space") and !DisplayServer.tts_is_speaking():
@@ -114,7 +120,10 @@ func _unhandled_input(_event):
 		$ButtonPause.emit_signal("pressed")
 		
 	if Input.is_action_just_pressed("tts_escape"):
-		get_parent().gui_release_focus()
+		if get_parent().gui_get_focus_owner() != null:
+			get_parent().gui_release_focus()
+		else:
+			$ButtonStop.emit_signal("pressed")
 		
 	if !$Utterance.has_focus():
 		if Input.is_action_just_pressed("tts_enter") or Input.is_action_just_pressed("tts_i"):
@@ -134,6 +143,9 @@ func _unhandled_input(_event):
 		
 	if Input.is_action_just_pressed("tts_l"):
 		$LineEditFilterLang.grab_focus.call_deferred()
+		
+	if Input.is_action_just_pressed("tts_u"):
+		$RichTextLabel.grab_focus.call_deferred()
 		
 	if Input.is_action_pressed("tts_shift"):
 		$HSliderRate.step = 0.5
@@ -156,6 +168,26 @@ func _unhandled_input(_event):
 	if Input.is_action_just_pressed("tts_f"):
 		$ButtonFullscreen.emit_signal("pressed")
 		
+func resize_label():
+	if mode_switch == false:
+		$RichTextLabel.grab_focus.call_deferred()
+	mode_switch = false
+	$RichTextLabel.size.y = $RichTextLabel.get_line_count() * 27
+	if $RichTextLabel.size.y >= 616:
+		$RichTextLabel.size.y = 616
+		$RichTextLabel.scroll_active = true
+	total_lines += $RichTextLabel.get_line_count()
+	var lines_copied = " lines copied, "
+	if $RichTextLabel.get_line_count() == 1:
+		lines_copied = " line copied, "
+	var utt_text = "Welcome to Clipboard Narrator.
+
+Press Ctrl-C anywhere to activate text to speech.
+Tab or Shift-Tab to change modes. Shift to increase slider speed.
+Enter and Escape to focus and unfocus text editor.\n\n" + str($RichTextLabel.get_line_count()) + lines_copied + str(total_lines) + " total"
+	$Utterance.placeholder_text = utt_text
+	size_changed = true
+		
 func _process(_delta):
 	if DisplayServer.clipboard_get() != last_copy:
 		match current_mode:
@@ -176,25 +208,33 @@ func _process(_delta):
 
 func _on_utterance_boundary(pos, id):
 	$RichTextLabel.text = "[bgcolor=yellow][color=black]" + ut_map[id].substr(0, pos) + "[/color][/bgcolor]" + ut_map[id].substr(pos, -1)
-
+	if size_changed == false:
+		resize_label()
+	
 func _on_utterance_start(id):
 	$Log.text += "utterance %d started\n" % [id]
-
+	
 func _on_utterance_end(id):
 	$RichTextLabel.text = "[bgcolor=yellow][color=black]" + ut_map[id] + "[/color][/bgcolor]"
 	$Log.text += "utterance %d ended\n" % [id]
 	ut_map.erase(id)
+	size_changed = false
 
 func _on_utterance_error(id):
 	$RichTextLabel.text = ""
 	$Log.text += "utterance %d canceled\n" % [id]
 	ut_map.erase(id)
+	size_changed = false
+	$RichTextLabel.text = "    U: Focus"
 	
 func _on_button_stop_pressed():
 	if !DisplayServer.tts_is_speaking():
-		$RichTextLabel.text = ""
+		$RichTextLabel.text = "    U: Focus"
 	DisplayServer.tts_stop()
-
+	$RichTextLabel.release_focus()
+	$RichTextLabel.size.y = 27
+	$RichTextLabel.scroll_active = false
+	
 func _on_button_pause_pressed():
 	if $ButtonPause.pressed:
 		DisplayServer.tts_pause()
@@ -301,3 +341,13 @@ func _on_button_fullscreen_pressed():
 		DisplayServer.window_set_mode(DisplayServer.WINDOW_MODE_FULLSCREEN)
 	elif DisplayServer.window_get_mode() != DisplayServer.WINDOW_MODE_WINDOWED:
 		DisplayServer.window_set_mode(DisplayServer.WINDOW_MODE_WINDOWED)
+
+
+func _on_rich_text_label_focus_entered():
+	stylebox_flat.border_width_bottom = 0
+	stylebox_flat.border_width_top = 0
+
+
+func _on_rich_text_label_focus_exited():
+	stylebox_flat.border_width_bottom = 1
+	stylebox_flat.border_width_top = 1
