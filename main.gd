@@ -13,12 +13,12 @@ var total_lines = 0
 var mode_switch = false
 
 # TODO
+# either stop richtextlabel auto scrolling because of highlight, or make it move along with it
 # add logo/icon, see current state of embedding pck, keep mode or expand mode?
 # turn speak and pause into 1 button and keep the held down + change text? add always on top toggle + resize
-# try linux primary clipboard + test linux html
+# save clipboard in array for going back in history 1-0 keys?
+# try linux primary clipboard in addition to normal clipboard? + test linux html
 # allow forcing english by default setting after saving + colorpicker reset default right click? + default mode loading+title + size/always on top keeping
-# save clipboard in array for going back in history 1-0 keys? pause toggle with selecting 1 word
-# how to limit "fit content height" size and allow scrolling richtextlabel somehow
 # allow changing sliders while speaking without stopping
 # web build cuts off speech before finishing help text, and following higlight rarely works.
 # https://github.com/godotengine/godot-demo-projects/pull/744 can't find non-english voices on windows at least
@@ -182,7 +182,7 @@ func resize_label():
 		lines_copied = " line copied, "
 	var utt_text = "Welcome to Clipboard Narrator.
 
-Press Ctrl-C anywhere to activate text to speech.
+Press Ctrl-C anywhere to start text to speech, Copy 1 word to stop.
 Tab or Shift-Tab to change modes. Shift to increase slider speed.
 Enter and Escape to focus and unfocus text editor.\n\n" + str($RichTextLabel.get_line_count()) + lines_copied + str(total_lines) + " total"
 	$Utterance.placeholder_text = utt_text
@@ -192,11 +192,19 @@ func _process(_delta):
 	if DisplayServer.clipboard_get() != last_copy:
 		match current_mode:
 			0:
-				$ButtonIntSpeak.emit_signal("pressed")
-				last_copy = DisplayServer.clipboard_get()
+				if DisplayServer.clipboard_get().count(" ") > 1 or $Utterance.has_focus():
+					$ButtonIntSpeak.emit_signal("pressed")
+					last_copy = DisplayServer.clipboard_get()
+				else:
+					$ButtonStop.emit_signal("pressed")
+					last_copy = DisplayServer.clipboard_get()
 			1:
-				$ButtonSpeak.emit_signal("pressed")
-				last_copy = DisplayServer.clipboard_get()
+				if DisplayServer.clipboard_get().count(" ") > 1 or $Utterance.has_focus():
+					$ButtonSpeak.emit_signal("pressed")
+					last_copy = DisplayServer.clipboard_get()
+				else:
+					$ButtonStop.emit_signal("pressed")
+					last_copy = DisplayServer.clipboard_get()
 			2:
 				last_copy = DisplayServer.clipboard_get()
 		

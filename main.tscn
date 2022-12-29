@@ -205,7 +205,7 @@ offset_right = 896.0
 offset_bottom = 644.0
 placeholder_text = "Welcome to Clipboard Narrator.
 
-Press Ctrl-C anywhere to activate text to speech.
+Press Ctrl-C anywhere to start text to speech. Copy 1 word to stop.
 Tab or Shift-Tab to change modes. Shift to increase slider speed.
 Enter and Escape to focus and unfocus text editor."
 wrap_mode = 1
