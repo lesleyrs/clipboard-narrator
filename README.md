@@ -7,9 +7,9 @@ I made this for myself to save me from doing more reading than needed, but I thi
 
 Web build will spam for clipboard access as it's required to work.
 
-PC build is recommended as it'll be able to read from clipboard in the background. No internet connection needed.
+PC build is recommended as it'll be able to read from clipboard in the background. No internet connection needed. Smart stopping voice added by copying 1[^1] word, this allows you to start and stop a voice without requiring window focus. Double click a word for faster copying.
 
-Current problems are commented in `main.gd`, but it's completely functional.
+Current problems are commented in [`main.gd`](main.gd#L15), but it's completely functional.
 
 Inside the application press `h` to get a tts explanation. Copying the same text back to back does not work, press `r` for that.
 
@@ -27,3 +27,5 @@ Will put all clipboards into a queue using `Ctrl-c`, only reads off clipboard bu
 - **manual**
 
 Ignores clipboard, only reads from what you put in the text editor and then hit `speak`, `space` or `r`.
+
+[^1]:1 word means a maximum of 1 space in the copied selection.
