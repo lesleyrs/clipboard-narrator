@@ -20,11 +20,11 @@ This application works differently based on which mode you are in (changed by pr
 
 - **interrupt**
 
-Will immediately interrupt current voice with `Ctrl-c`, and only reads off clipboard.
+Will immediately interrupt current voice with `Ctrl-c`, and only reads off clipboard. Copying 1 word will stop the voice.
 
 - **queue**
 
-Will put all clipboards into a queue using `Ctrl-c`, only reads off clipboard but allows you to add non-sequential text to it.
+Will put all clipboards into a queue using `Ctrl-c`, only reads off clipboard but allows you to add non-sequential text to it. Copying 1 word will pause the voice.
 
 - **manual**
 
