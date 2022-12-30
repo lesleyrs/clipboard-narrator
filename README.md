@@ -9,7 +9,7 @@ I made this for myself to save me from doing more reading than needed, but I thi
 
 Web build will spam for clipboard access as it's required to use this effectively. Some things may not work on web either.
 
-PC build is highly recommended as it'll be able to read from clipboard in the background. No internet connection needed. Smart stopping voice added by copying 1[^1] word, this allows you to start and stop a voice without requiring window focus.
+PC build is highly recommended as it'll be able to read from clipboard in the background. No internet connection needed. Smart stopping voice added by copying 1 word[^1], this allows you to start and stop a voice without requiring window focus.
 
 Current problems are commented in [`main.gd`](main.gd#L15), but it's completely functional.
 
