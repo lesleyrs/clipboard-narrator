@@ -7,7 +7,7 @@ var last_copy = DisplayServer.clipboard_get()
 enum MODES { INTERRUPT, QUEUE, MANUAL }
 var current_mode = MODES.INTERRUPT
 var mode_switch = false
-var current_title = "INTERRUPT MODE"
+var mode_name = "INTERRUPT MODE"
 var stylebox_flat = StyleBoxFlat.new()
 var size_changed = false
 var total_lines = 0
@@ -18,7 +18,7 @@ var total_lines = 0
 # save total_lines/lang/colorpicker/sliders/mode/title/size/ontop/check all settings for loading
 
 # allow changing slider while speaking and stop richtext moving scrollbar or make it follow without stopping
-# web build cuts off speech before finishing help text, and following higlight rarely works.
+# web build cuts off speech before finishing help text, and following highlight rarely works.
 # https://github.com/godotengine/godot-demo-projects/pull/744 can't find non-english voices on windows at least
 # https://github.com/godotengine/godot/issues/39144 interrupt voice breaks the yellow highlight + can't scroll at all?
 # https://github.com/godotengine/godot/issues/3985 no smart word wrap mode for textedit
@@ -47,7 +47,7 @@ func _ready():
 	stylebox_flat.border_color = Color.WHITE
 	$RichTextLabel.add_theme_stylebox_override("normal", stylebox_flat)
 
-	DisplayServer.window_set_title("Clipboard Narrator - %s" % current_title)
+	DisplayServer.window_set_title("Clipboard Narrator - %s" % mode_name)
 	voices = DisplayServer.tts_get_voices()
 	var root = $Tree.create_item()
 	$Tree.set_hide_root(true)
@@ -75,24 +75,24 @@ func _ready():
 	DisplayServer.tts_set_utterance_callback(DisplayServer.TTS_UTTERANCE_BOUNDARY, Callable(self, "_on_utterance_boundary"))
 
 func _unhandled_input(_event):
-	DisplayServer.window_set_title("Clipboard Narrator - %s" % current_title)
+	DisplayServer.window_set_title("Clipboard Narrator - %s" % mode_name)
 	if Input.is_action_just_pressed("tts_shift_tab") and !$Utterance.has_focus():
 		var voice = DisplayServer.tts_get_voices_for_language("en")
 		if !voice.is_empty():
 			match current_mode:
 				0:
 					current_mode = MODES.MANUAL
-					current_title = "MANUAL MODE"
+					mode_name = "MANUAL MODE"
 					ut_map[id] = "MANUAL MODE"
 					DisplayServer.tts_speak("MANUAL MODE", voice[0], $HSliderVolume.value, $HSliderPitch.value, $HSliderRate.value, id, true)
 				1:
 					current_mode = MODES.INTERRUPT
-					current_title = "INTERRUPT MODE"
+					mode_name = "INTERRUPT MODE"
 					ut_map[id] = "INTERRUPT MODE"
 					DisplayServer.tts_speak("INTERRUPT MODE", voice[0], $HSliderVolume.value, $HSliderPitch.value, $HSliderRate.value, id, true)
 				2:
 					current_mode = MODES.QUEUE
-					current_title = "QUEUE MODE"
+					mode_name = "QUEUE MODE"
 					ut_map[id] = "QUEUE MODE"
 					DisplayServer.tts_speak("QUEUE MODE", voice[0], $HSliderVolume.value, $HSliderPitch.value, $HSliderRate.value, id, true)
 			mode_switch = true
@@ -104,17 +104,17 @@ func _unhandled_input(_event):
 			match current_mode:
 				0:
 					current_mode = MODES.QUEUE
-					current_title = "QUEUE MODE"
+					mode_name = "QUEUE MODE"
 					ut_map[id] = "QUEUE MODE"
 					DisplayServer.tts_speak("QUEUE MODE", voice[0], $HSliderVolume.value, $HSliderPitch.value, $HSliderRate.value, id, true)
 				1:
 					current_mode = MODES.MANUAL
-					current_title = "MANUAL MODE"
+					mode_name = "MANUAL MODE"
 					ut_map[id] = "MANUAL MODE"
 					DisplayServer.tts_speak("MANUAL MODE", voice[0], $HSliderVolume.value, $HSliderPitch.value, $HSliderRate.value, id, true)
 				2:
 					current_mode = MODES.INTERRUPT
-					current_title = "INTERRUPT MODE"
+					mode_name = "INTERRUPT MODE"
 					ut_map[id] = "INTERRUPT MODE"
 					DisplayServer.tts_speak("INTERRUPT MODE", voice[0], $HSliderVolume.value, $HSliderPitch.value, $HSliderRate.value, id, true)
 			mode_switch = true
@@ -297,7 +297,7 @@ func _on_button_toggle_pressed():
 				id += 1
 
 func _on_button_int_speak_pressed():
-#	if DisplayServer.tts_is_speaking(): # bad workaround to fix higlight because then you have to press r twice.
+#	if DisplayServer.tts_is_speaking(): # bad workaround to fix highlight because then you have to press r twice.
 #		DisplayServer.tts_stop()
 #	else:
 #		$ButtonToggle.text = "Space: Pause"
