@@ -29,16 +29,16 @@ var total_lines = 0
 # Note: On Windows and Linux (X11), utterance text can use SSML markup.
 # SSML support is engine and voice dependent. If the engine does not support SSML,
 # you should strip out all XML markup before calling tts_speak().
-		
+
 func _ready():
 	format_suffix()
-	
+
 	if OS.has_feature("web"):
 		$ButtonFolder.queue_free() # see if this one works on exported web
 		$ButtonFullscreen.queue_free()
 		$ButtonOnTop.queue_free()
 		$OptionButton.queue_free()
-		
+
 	$OptionButton.add_item("P: 854x480")
 	$OptionButton.add_item("P: 960x540")
 	$OptionButton.add_item("P: 1024x576")
@@ -47,7 +47,7 @@ func _ready():
 	$OptionButton.add_item("P: 1366x768")
 	$OptionButton.add_item("P: 1600x900")
 	$OptionButton.select(3)
-	
+
 	$ColorPickerButton.color = "4d4d4d"
 	stylebox_flat.bg_color = $ColorPickerButton.color
 	stylebox_flat.border_width_bottom = 1
@@ -190,15 +190,15 @@ func _unhandled_input(_event):
 
 	if Input.is_action_just_pressed("tts_t"):
 		$ButtonOnTop.emit_signal("pressed")
-		
+
 	if Input.is_action_just_pressed("tts_o"):
 		$ButtonFolder.emit_signal("pressed")
-		
+
 	if Input.is_action_just_pressed("tts_p"):
 		if DisplayServer.window_get_mode() != DisplayServer.WINDOW_MODE_FULLSCREEN \
 		and DisplayServer.window_get_mode() != DisplayServer.WINDOW_MODE_MAXIMIZED:
 			$OptionButton.show_popup()
-		
+
 func resize_label():
 	if mode_switch == false:
 		$RichTextLabel.grab_focus.call_deferred()
@@ -209,32 +209,33 @@ func resize_label():
 		$RichTextLabel.scroll_active = true
 	format_suffix()
 	size_changed = true
-		
+
 @warning_ignore(integer_division)
 func format_suffix():
 	total_lines += $RichTextLabel.get_line_count()
-		
+
 	var format_label: String
-	var lines_copied = " lines copied, "
-	var lines_total = " lines total"
+	var lines_copied = " lines copied "
 	if $RichTextLabel.get_line_count() == 1:
-		lines_copied = " line copied, "
-		lines_total = " line total"
-	if total_lines >= 1000000000000000:
-		format_label = lines_copied + str(total_lines / 1000000000000000) + "Q" + lines_total
+		lines_copied = " line copied "
+
+	if total_lines >= 1000000000000000000:
+		format_label = lines_copied + "[rainbow freq=0.2 sat=10 val=20](" + str(total_lines / 1000000000000000000) + " Quintillion)[/rainbow]"
+	elif total_lines >= 1000000000000000:
+		format_label = lines_copied + "[color=CORAL](" + str(total_lines / 1000000000000000) + "Q)[/color]"
 	elif total_lines >= 1000000000000:
-		format_label = lines_copied + str(total_lines / 1000000000000) + "T" + lines_total
+		format_label = lines_copied + "[color=CYAN](" + str(total_lines / 1000000000000) + "T)[/color]"
 	elif total_lines >= 1000000000:
-		format_label = lines_copied + str(total_lines / 1000000000) + "B" + lines_total
+		format_label = lines_copied + "[color=INDIAN_RED](" + str(total_lines / 1000000000) + "B)[/color]"
 	elif total_lines >= 10000000:
-		format_label = lines_copied + str(total_lines / 1000000) + "M" + lines_total
+		format_label = lines_copied + "[color=GREEN](" + str(total_lines / 1000000) + "M)[/color]"
 	elif total_lines >= 100000:
-		format_label = lines_copied + str(total_lines / 1000) + "K" + lines_total
+		format_label = lines_copied + "[color=WHITE](" + str(total_lines / 1000) + "K)[/color]"
 	else:
-		format_label = lines_copied + str(total_lines) + lines_total
-		
-	$LinesLabel.text = str($RichTextLabel.get_line_count()) + format_label
-		
+		format_label = lines_copied + "[color=YELLOW](" + str(total_lines) + ")[/color]"
+
+	$LinesLabel.text = "[center]" + str($RichTextLabel.get_line_count()) + format_label + "[/center]"
+
 func _process(_delta):
 	if DisplayServer.clipboard_get() != last_copy:
 		match current_mode:
@@ -408,7 +409,7 @@ func _on_color_picker_button_color_changed(color):
 		stylebox_flat.border_color = Color.BLACK
 	else:
 		stylebox_flat.border_color = Color.WHITE
-	
+
 func _on_rich_text_label_focus_entered():
 	stylebox_flat.border_width_bottom = 0
 	stylebox_flat.border_width_top = 0
@@ -416,7 +417,7 @@ func _on_rich_text_label_focus_entered():
 func _on_rich_text_label_focus_exited():
 	stylebox_flat.border_width_bottom = 1
 	stylebox_flat.border_width_top = 1
-	
+
 func _on_button_fullscreen_pressed():
 	if DisplayServer.window_get_mode() != DisplayServer.WINDOW_MODE_FULLSCREEN \
 	and DisplayServer.window_get_mode() != DisplayServer.WINDOW_MODE_MAXIMIZED \
@@ -442,10 +443,10 @@ func _on_button_on_top_pressed():
 		DisplayServer.window_set_flag(DisplayServer.WINDOW_FLAG_ALWAYS_ON_TOP, false)
 		$ButtonOnTop.set_pressed(DisplayServer.window_get_flag(DisplayServer.WINDOW_FLAG_ALWAYS_ON_TOP))
 		$ButtonFullscreen.disabled = false
-		
+
 func _on_option_button_item_selected(index):
 	var current_selected = index
-	
+
 	match current_selected:
 		0:
 			DisplayServer.window_set_size(Vector2(854, 480))
@@ -461,6 +462,6 @@ func _on_option_button_item_selected(index):
 			DisplayServer.window_set_size(Vector2(1366, 768))
 		6:
 			DisplayServer.window_set_size(Vector2(1600, 900))
-			
+
 func _on_button_folder_pressed():
 	OS.shell_open(ProjectSettings.globalize_path("user://"))

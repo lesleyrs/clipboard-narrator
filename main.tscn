@@ -119,7 +119,7 @@ offset_right = 160.0
 offset_bottom = 275.0
 focus_mode = 0
 
-[node name="LinesLabel" type="Label" parent="."]
+[node name="LinesLabel" type="RichTextLabel" parent="."]
 layout_mode = 0
 offset_left = 16.0
 offset_top = 288.0
@@ -127,10 +127,10 @@ offset_right = 336.0
 offset_bottom = 323.0
 theme_override_colors/font_shadow_color = Color(0, 0, 0, 1)
 theme_override_constants/shadow_outline_size = 1
+theme_override_font_sizes/normal_font_size = 24
+bbcode_enabled = true
 text = "0 lines copied, 0 total"
-horizontal_alignment = 1
-vertical_alignment = 1
-autowrap_mode = 3
+scroll_active = false
 
 [node name="HSliderRate" type="HSlider" parent="."]
 layout_mode = 0
