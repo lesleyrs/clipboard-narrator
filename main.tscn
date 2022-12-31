@@ -130,7 +130,7 @@ theme_override_colors/font_shadow_color = Color(0, 0, 0, 1)
 theme_override_constants/shadow_outline_size = 1
 theme_override_font_sizes/normal_font_size = 24
 bbcode_enabled = true
-text = "0 lines copied, 0 total"
+text = "[center]0 lines copied, 0 total[/center]"
 scroll_active = false
 
 [node name="HSliderRate" type="HSlider" parent="."]

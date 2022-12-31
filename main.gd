@@ -10,13 +10,13 @@ var mode_name = "INTERRUPT MODE"
 var stylebox_flat = StyleBoxFlat.new()
 var size_changed = false
 var total_lines = 0
+var window_active = false
 
 # TODO
-# add logo/icon, see current state of embedding pck, add releases to github, optionbutton text low resolution?
-# save clipboard in array 1-0 keys history, try linux primary clipboard extra + web build
+# add logo/icon, see state of embedding pck, add releases to github, try linux primary clipboard extra + web build
+# save clipboard in array 1-0 keys history, optionbutton text low resolution, shadowed variables not ignored beta 10
 # save total_lines/lang/colorpicker/sliders/mode/title/size/ontop/check all settings for loading
-# shadowed variables warnings not ignored in beta 10, fix pausing and starting queue mode
-# disable scroll and use scroll to line? H key starts speech on web but not space? compare with old version
+# disable scroll and use scroll to line? sometimes when switching modes, the richtextlabel doesn't resize
 
 # allow changing slider while speaking and stop richtext moving scrollbar or make it follow without stopping
 # web build cuts off speech before finishing help text, and following highlight rarely works.
@@ -131,10 +131,8 @@ func _unhandled_input(_event):
 		id += 1
 
 	if Input.is_action_just_pressed("tts_space"):
+		window_active = true
 		$ButtonToggle.emit_signal("pressed")
-
-#	elif Input.is_action_just_pressed("tts_space") and DisplayServer.tts_is_speaking():
-#		$ButtonToggle.emit_signal("pressed") # what to do here check this
 
 	if Input.is_action_just_pressed("tts_escape"):
 		if get_parent().gui_get_focus_owner() != null:
@@ -199,6 +197,7 @@ func _unhandled_input(_event):
 			$OptionButton.show_popup()
 
 func resize_label():
+#	print($RichTextLabel.get_line_count())
 	$RichTextLabel.size.y = $RichTextLabel.get_line_count() * 27
 	if $RichTextLabel.size.y >= 616:
 		$RichTextLabel.size.y = 616
@@ -247,15 +246,17 @@ func _process(_delta):
 					$ButtonToggle.emit_signal("pressed")
 					last_copy = DisplayServer.clipboard_get()
 				else:
-					$ButtonStop.emit_signal("pressed")
+					pause()
 					last_copy = DisplayServer.clipboard_get()
 			2:
 				last_copy = DisplayServer.clipboard_get()
 
 	if DisplayServer.tts_is_speaking():
 		$Label.text = "Speaking..."
+		$ButtonToggle.text = "Space: Pause"
 	else:
 		$Label.text = "Waiting for input..."
+		$ButtonToggle.text = "Space: Speak"
 
 @warning_ignore(shadowed_variable)
 func _on_utterance_boundary(pos, id):
@@ -266,7 +267,6 @@ func _on_utterance_boundary(pos, id):
 @warning_ignore(shadowed_variable)
 func _on_utterance_start(id):
 	$Log.text += "utterance %d started\n" % [id]
-	$ButtonToggle.text = "Space: Pause"
 
 @warning_ignore(shadowed_variable)
 func _on_utterance_end(id):
@@ -275,7 +275,6 @@ func _on_utterance_end(id):
 	ut_map.erase(id)
 	size_changed = false
 	DisplayServer.tts_resume()
-	$ButtonToggle.text = "Space: Speak"
 
 @warning_ignore(shadowed_variable)
 func _on_utterance_error(id):
@@ -285,7 +284,6 @@ func _on_utterance_error(id):
 	size_changed = false
 	$RichTextLabel.text = " U: Focus"
 	DisplayServer.tts_resume()
-	$ButtonToggle.text = "Space: Speak"
 
 func _on_button_stop_pressed():
 	DisplayServer.tts_stop()
@@ -295,17 +293,16 @@ func _on_button_stop_pressed():
 	$RichTextLabel.size.y = 27
 	$RichTextLabel.scroll_active = false
 	$RichTextLabel.text = " U: Focus"
-	$ButtonToggle.text = "Space: Speak"
 
-func _on_button_toggle_pressed():
-	if DisplayServer.tts_is_speaking():
+func pause():
+	if !DisplayServer.tts_is_paused():
 		DisplayServer.tts_pause()
-		$ButtonToggle.text = "Space: Speak"
-	elif DisplayServer.tts_is_paused():
+	else:
 		DisplayServer.tts_resume()
-		$ButtonToggle.text = "Space: Pause"
-	elif !DisplayServer.tts_is_speaking() or DisplayServer.tts_is_paused():
-		$ButtonToggle.text = "Space: Pause"
+		
+func _on_button_toggle_pressed():
+	if !window_active and DisplayServer.tts_is_speaking() or !window_active and !DisplayServer.tts_is_paused() \
+	or window_active and !DisplayServer.tts_is_speaking() and !DisplayServer.tts_is_paused():
 		if !OS.has_feature("web"):
 			if $Tree.get_selected():
 				$Log.text += "utterance %d queried\n" % [id]
@@ -335,12 +332,12 @@ func _on_button_toggle_pressed():
 						ut_map[id] = $Utterance.text
 						DisplayServer.tts_speak($Utterance.text, voice[0], $HSliderVolume.value, $HSliderPitch.value, $HSliderRate.value, id, false)
 				id += 1
+	else:
+		pause()
 
 func _on_button_int_speak_pressed():
 #	if DisplayServer.tts_is_speaking(): # bad workaround to fix highlight because then you have to press r twice.
 #		DisplayServer.tts_stop()
-#	else:
-#		$ButtonToggle.text = "Space: Pause"
 	if !OS.has_feature("web"):
 		if $Tree.get_selected():
 			$Log.text += "utterance %d interrupt\n" % [id]
@@ -385,12 +382,11 @@ func _on_h_slider_volume_value_changed(value):
 
 func _on_button_demo_pressed():
 	var voice = DisplayServer.tts_get_voices_for_language("en")
-
-	if !voice.is_empty():
-		ut_map[id] = $Utterance.placeholder_text
-		DisplayServer.tts_speak($Utterance.placeholder_text, voice[0], 50, 1, 1, id)
-		$ButtonToggle.text = "Space: Pause"
-		id += 1
+	if !DisplayServer.tts_is_speaking() and !DisplayServer.tts_is_paused():
+		if !voice.is_empty():
+			ut_map[id] = $Utterance.placeholder_text
+			DisplayServer.tts_speak($Utterance.placeholder_text, voice[0], 50, 1, 1, id)
+			id += 1
 
 func _on_line_edit_filter_name_text_changed(_new_text):
 	$Tree.clear()
@@ -469,3 +465,10 @@ func _on_option_button_item_selected(index):
 
 func _on_button_folder_pressed():
 	OS.shell_open(ProjectSettings.globalize_path("user://"))
+	
+func _notification(what):
+	match what:
+		MainLoop.NOTIFICATION_APPLICATION_FOCUS_IN:
+			window_active = true
+		MainLoop.NOTIFICATION_APPLICATION_FOCUS_OUT:
+			window_active = false
