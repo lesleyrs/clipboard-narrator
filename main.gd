@@ -133,15 +133,16 @@ func _unhandled_input(_event):
 			mode_switch = true
 		id += 1
 
-	if Input.is_action_just_pressed("tts_space") and !DisplayServer.tts_is_speaking():
+	if Input.is_action_just_pressed("tts_space"):
 		$ButtonToggle.emit_signal("pressed")
 
-	elif Input.is_action_just_pressed("tts_space") and DisplayServer.tts_is_speaking():
-		$ButtonToggle.emit_signal("pressed")
+#	elif Input.is_action_just_pressed("tts_space") and DisplayServer.tts_is_speaking():
+#		$ButtonToggle.emit_signal("pressed") # what to do here check this
 
 	if Input.is_action_just_pressed("tts_escape"):
 		if get_parent().gui_get_focus_owner() != null:
 			get_parent().gui_release_focus()
+			$RichTextLabel.set_focus_mode(Control.FOCUS_NONE)
 		else:
 			$ButtonStop.emit_signal("pressed")
 
@@ -165,6 +166,7 @@ func _unhandled_input(_event):
 		$LineEditFilterLang.grab_focus.call_deferred()
 
 	if Input.is_action_just_pressed("tts_u"):
+		$RichTextLabel.set_focus_mode(Control.FOCUS_ALL)
 		$RichTextLabel.grab_focus.call_deferred()
 
 	if Input.is_action_pressed("tts_shift"):
@@ -320,6 +322,9 @@ func _on_button_toggle_pressed():
 						DisplayServer.tts_speak($Utterance.text, $Tree.get_selected().get_metadata(0), $HSliderVolume.value, $HSliderPitch.value, $HSliderRate.value, id, false)
 				id += 1
 			else:
+				# is it possible for alerts to be always on top?
+				if DisplayServer.window_get_flag(DisplayServer.WINDOW_FLAG_ALWAYS_ON_TOP):
+					$ButtonOnTop.emit_signal("pressed")
 				OS.alert("Select voice.")
 
 		if OS.has_feature("web"):
@@ -352,6 +357,9 @@ func _on_button_int_speak_pressed():
 					DisplayServer.tts_speak($Utterance.text, $Tree.get_selected().get_metadata(0), $HSliderVolume.value, $HSliderPitch.value, $HSliderRate.value, id, true)
 			id += 1
 		else:
+			# is it possible for alerts to be always on top?
+			if DisplayServer.window_get_flag(DisplayServer.WINDOW_FLAG_ALWAYS_ON_TOP):
+					$ButtonOnTop.emit_signal("pressed")
 			OS.alert("Select voice.")
 
 	if OS.has_feature("web"):
