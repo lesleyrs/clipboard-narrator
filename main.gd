@@ -230,9 +230,9 @@ func format_suffix():
 	elif total_lines >= 10000000:
 		format_label = lines_copied + "[color=GREEN](" + str(total_lines / 1000000) + "M)[/color]"
 	elif total_lines >= 100000:
-		format_label = lines_copied + "[color=WHITE](" + str(total_lines / 1000) + "K)[/color]"
+		format_label = lines_copied + "[color=YELLOW](" + str(total_lines / 1000) + "K)[/color]"
 	else:
-		format_label = lines_copied + "[color=YELLOW](" + str(total_lines) + ")[/color]"
+		format_label = lines_copied + "[color=WHITE](" + str(total_lines) + ")[/color]"
 
 	$LinesLabel.text = "[center]" + str($RichTextLabel.get_line_count()) + format_label + "[/center]"
 
