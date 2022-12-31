@@ -6,7 +6,6 @@ var voices
 var last_copy = DisplayServer.clipboard_get()
 enum MODES { INTERRUPT, QUEUE, MANUAL }
 var current_mode = MODES.INTERRUPT
-var mode_switch = false
 var mode_name = "INTERRUPT MODE"
 var stylebox_flat = StyleBoxFlat.new()
 var size_changed = false
@@ -14,7 +13,7 @@ var total_lines = 0
 
 # TODO
 # add logo/icon, see current state of embedding pck, add releases to github, optionbutton text low resolution?
-# save clipboard in array 1-0 keys history, try linux primary clipboard extra + test linux html
+# save clipboard in array 1-0 keys history, try linux primary clipboard extra + web build
 # save total_lines/lang/colorpicker/sliders/mode/title/size/ontop/check all settings for loading
 # shadowed variables warnings not ignored in beta 10, fix pausing and starting queue mode
 # disable scroll and use scroll to line? H key starts speech on web but not space? compare with old version
@@ -34,7 +33,7 @@ func _ready():
 	format_suffix()
 
 	if OS.has_feature("web"):
-		$ButtonFolder.queue_free() # see if this one works on exported web
+		$ButtonFolder.queue_free() # see if this one works on web exported
 		$ButtonFullscreen.queue_free()
 		$ButtonOnTop.queue_free()
 		$OptionButton.queue_free()
@@ -108,7 +107,6 @@ func _unhandled_input(_event):
 					mode_name = "QUEUE MODE"
 					ut_map[id] = "QUEUE MODE"
 					DisplayServer.tts_speak("QUEUE MODE", voice[0], $HSliderVolume.value, $HSliderPitch.value, $HSliderRate.value, id, true)
-			mode_switch = true
 		id += 1
 
 	elif Input.is_action_just_pressed("tts_tab") and !$Utterance.has_focus():
@@ -130,7 +128,6 @@ func _unhandled_input(_event):
 					mode_name = "INTERRUPT MODE"
 					ut_map[id] = "INTERRUPT MODE"
 					DisplayServer.tts_speak("INTERRUPT MODE", voice[0], $HSliderVolume.value, $HSliderPitch.value, $HSliderRate.value, id, true)
-			mode_switch = true
 		id += 1
 
 	if Input.is_action_just_pressed("tts_space"):
@@ -202,9 +199,6 @@ func _unhandled_input(_event):
 			$OptionButton.show_popup()
 
 func resize_label():
-	if mode_switch == false:
-		$RichTextLabel.grab_focus.call_deferred()
-	mode_switch = false
 	$RichTextLabel.size.y = $RichTextLabel.get_line_count() * 27
 	if $RichTextLabel.size.y >= 616:
 		$RichTextLabel.size.y = 616
@@ -289,16 +283,18 @@ func _on_utterance_error(id):
 	$Log.text += "utterance %d canceled\n" % [id]
 	ut_map.erase(id)
 	size_changed = false
-	$RichTextLabel.text = "    U: Focus"
+	$RichTextLabel.text = " U: Focus"
 	DisplayServer.tts_resume()
 	$ButtonToggle.text = "Space: Speak"
 
 func _on_button_stop_pressed():
 	DisplayServer.tts_stop()
-	$RichTextLabel.release_focus()
+	if get_parent().gui_get_focus_owner() != null:
+		get_parent().gui_release_focus()
+		$RichTextLabel.set_focus_mode(Control.FOCUS_NONE)
 	$RichTextLabel.size.y = 27
 	$RichTextLabel.scroll_active = false
-	$RichTextLabel.text = "    U: Focus"
+	$RichTextLabel.text = " U: Focus"
 	$ButtonToggle.text = "Space: Speak"
 
 func _on_button_toggle_pressed():
