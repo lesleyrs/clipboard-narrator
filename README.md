@@ -1,5 +1,7 @@
-# clipboard-narrator
+# Clipboard Narrator
 Turn any web page into an audiobook, works in the background on desktop!
+
+**Note: on linux it won't be able to find voices until https://github.com/godotengine/buildroot/issues/7**
 
 Based on: https://github.com/godotengine/godot-demo-projects/pull/744
 
