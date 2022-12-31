@@ -16,6 +16,8 @@ var total_lines = 0
 # add logo/icon, see current state of embedding pck, add releases to github, optionbutton text low resolution?
 # save clipboard in array 1-0 keys history, try linux primary clipboard extra + test linux html
 # save total_lines/lang/colorpicker/sliders/mode/title/size/ontop/check all settings for loading
+# shadowed variables warnings not ignored in beta 10, fix pausing and starting queue mode
+# disable scroll and use scroll to line? H key starts speech on web but not space? compare with old version
 
 # allow changing slider while speaking and stop richtext moving scrollbar or make it follow without stopping
 # web build cuts off speech before finishing help text, and following highlight rarely works.
@@ -27,8 +29,16 @@ var total_lines = 0
 # Note: On Windows and Linux (X11), utterance text can use SSML markup.
 # SSML support is engine and voice dependent. If the engine does not support SSML,
 # you should strip out all XML markup before calling tts_speak().
-
+		
 func _ready():
+	format_suffix()
+	
+	if OS.has_feature("web"):
+		$ButtonFolder.queue_free() # see if this one works on exported web
+		$ButtonFullscreen.queue_free()
+		$ButtonOnTop.queue_free()
+		$OptionButton.queue_free()
+		
 	$OptionButton.add_item("P: 854x480")
 	$OptionButton.add_item("P: 960x540")
 	$OptionButton.add_item("P: 1024x576")
@@ -44,7 +54,10 @@ func _ready():
 	stylebox_flat.border_width_top = 1
 	stylebox_flat.border_width_left = 1
 	stylebox_flat.border_width_right = 1
-	stylebox_flat.border_color = Color.WHITE
+	if $ColorPickerButton.color.get_luminance() >= 0.5: # needed here for saving background colour
+		stylebox_flat.border_color = Color.BLACK
+	else:
+		stylebox_flat.border_color = Color.WHITE
 	$RichTextLabel.add_theme_stylebox_override("normal", stylebox_flat)
 
 	DisplayServer.window_set_title("Clipboard Narrator - %s" % mode_name)
@@ -194,13 +207,34 @@ func resize_label():
 	if $RichTextLabel.size.y >= 616:
 		$RichTextLabel.size.y = 616
 		$RichTextLabel.scroll_active = true
+	format_suffix()
+	size_changed = true
+		
+@warning_ignore(integer_division)
+func format_suffix():
 	total_lines += $RichTextLabel.get_line_count()
+		
+	var format_label: String
 	var lines_copied = " lines copied, "
+	var lines_total = " lines total"
 	if $RichTextLabel.get_line_count() == 1:
 		lines_copied = " line copied, "
-	$LinesLabel.text = str($RichTextLabel.get_line_count()) + lines_copied + str(total_lines) + " total"
-	size_changed = true
-
+		lines_total = " line total"
+	if total_lines >= 1000000000000000:
+		format_label = lines_copied + str(total_lines / 1000000000000000) + "Q" + lines_total
+	elif total_lines >= 1000000000000:
+		format_label = lines_copied + str(total_lines / 1000000000000) + "T" + lines_total
+	elif total_lines >= 1000000000:
+		format_label = lines_copied + str(total_lines / 1000000000) + "B" + lines_total
+	elif total_lines >= 10000000:
+		format_label = lines_copied + str(total_lines / 1000000) + "M" + lines_total
+	elif total_lines >= 100000:
+		format_label = lines_copied + str(total_lines / 1000) + "K" + lines_total
+	else:
+		format_label = lines_copied + str(total_lines) + lines_total
+		
+	$LinesLabel.text = str($RichTextLabel.get_line_count()) + format_label
+		
 func _process(_delta):
 	if DisplayServer.clipboard_get() != last_copy:
 		match current_mode:
@@ -226,15 +260,18 @@ func _process(_delta):
 	else:
 		$Label.text = "Waiting for input..."
 
+@warning_ignore(shadowed_variable)
 func _on_utterance_boundary(pos, id):
 	$RichTextLabel.text = "[bgcolor=yellow][color=black]" + ut_map[id].substr(0, pos) + "[/color][/bgcolor]" + ut_map[id].substr(pos, -1)
 	if size_changed == false:
 		resize_label()
 
+@warning_ignore(shadowed_variable)
 func _on_utterance_start(id):
 	$Log.text += "utterance %d started\n" % [id]
 	$ButtonToggle.text = "Space: Pause"
 
+@warning_ignore(shadowed_variable)
 func _on_utterance_end(id):
 	$RichTextLabel.text = "[bgcolor=yellow][color=black]" + ut_map[id] + "[/color][/bgcolor]"
 	$Log.text += "utterance %d ended\n" % [id]
@@ -243,6 +280,7 @@ func _on_utterance_end(id):
 	DisplayServer.tts_resume()
 	$ButtonToggle.text = "Space: Speak"
 
+@warning_ignore(shadowed_variable)
 func _on_utterance_error(id):
 	$RichTextLabel.text = ""
 	$Log.text += "utterance %d canceled\n" % [id]
@@ -366,6 +404,10 @@ func _on_log_text_set():
 func _on_color_picker_button_color_changed(color):
 	RenderingServer.set_default_clear_color($ColorPickerButton.color)
 	stylebox_flat.bg_color = $ColorPickerButton.color
+	if $ColorPickerButton.color.get_luminance() >= 0.5:
+		stylebox_flat.border_color = Color.BLACK
+	else:
+		stylebox_flat.border_color = Color.WHITE
 	
 func _on_rich_text_label_focus_entered():
 	stylebox_flat.border_width_bottom = 0
