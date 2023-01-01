@@ -8,18 +8,18 @@ enum MODES { INTERRUPT, QUEUE, MANUAL }
 var current_mode = MODES.INTERRUPT
 var mode_name = "INTERRUPT MODE"
 var stylebox_flat = StyleBoxFlat.new()
-var size_changed = false
 var total_lines = 0
 var window_active = false
+var last_count
 
 # TODO
-# add logo/icon, see state of embedding pck, add releases to github, try linux primary clipboard extra + web build
-# save clipboard in array 1-0 keys history, optionbutton text low resolution, shadowed variables not ignored beta 10
+# add logo/icon, see state of embedding pck, add releases to github, try linux primary clipboard?
+# save clipboard in array 1-0 keys history, disable scroll and use scroll to line? shadowed variables not ignored beta 10
 # save total_lines/lang/colorpicker/sliders/mode/title/size/ontop/check all settings for loading
-# disable scroll and use scroll to line? sometimes when switching modes, the richtextlabel doesn't resize
+# optionbutton text low resolution, what exactly causes can't open clipboard (doesn't matter really)
 
 # allow changing slider while speaking and stop richtext moving scrollbar or make it follow without stopping
-# web build cuts off speech before finishing help text, and following highlight rarely works.
+# web build cuts off + doesn't resume properly + focus notification not available + following highlight rarely works.
 # https://github.com/godotengine/godot-demo-projects/pull/744 can't find non-english voices on windows at least
 # https://github.com/godotengine/godot/issues/39144 interrupt voice breaks the yellow highlight + can't scroll at all?
 # https://github.com/godotengine/godot/issues/3985 no smart word wrap mode for textedit
@@ -33,7 +33,7 @@ func _ready():
 	format_suffix()
 
 	if OS.has_feature("web"):
-		$ButtonFolder.queue_free() # see if this one works on web exported
+		$ButtonFolder.queue_free() # see if this one works on web export
 		$ButtonFullscreen.queue_free()
 		$ButtonOnTop.queue_free()
 		$OptionButton.queue_free()
@@ -53,7 +53,7 @@ func _ready():
 	stylebox_flat.border_width_top = 1
 	stylebox_flat.border_width_left = 1
 	stylebox_flat.border_width_right = 1
-	if $ColorPickerButton.color.get_luminance() >= 0.5: # needed here for saving background colour
+	if $ColorPickerButton.color.get_luminance() >= 0.5: # needed here for saving bg colour
 		stylebox_flat.border_color = Color.BLACK
 	else:
 		stylebox_flat.border_color = Color.WHITE
@@ -197,13 +197,10 @@ func _unhandled_input(_event):
 			$OptionButton.show_popup()
 
 func resize_label():
-#	print($RichTextLabel.get_line_count())
 	$RichTextLabel.size.y = $RichTextLabel.get_line_count() * 27
 	if $RichTextLabel.size.y >= 616:
 		$RichTextLabel.size.y = 616
 		$RichTextLabel.scroll_active = true
-	format_suffix()
-	size_changed = true
 
 @warning_ignore(integer_division)
 func format_suffix():
@@ -232,6 +229,11 @@ func format_suffix():
 	$LinesLabel.text = "[center]" + str($RichTextLabel.get_line_count()) + format_label + "[/center]"
 
 func _process(_delta):
+	if $RichTextLabel.get_line_count() != last_count:
+		last_count = $RichTextLabel.get_line_count()
+		resize_label()
+		format_suffix()
+		
 	if DisplayServer.clipboard_get() != last_copy:
 		match current_mode:
 			0:
@@ -246,7 +248,7 @@ func _process(_delta):
 					$ButtonToggle.emit_signal("pressed")
 					last_copy = DisplayServer.clipboard_get()
 				else:
-					pause()
+					pause_resume()
 					last_copy = DisplayServer.clipboard_get()
 			2:
 				last_copy = DisplayServer.clipboard_get()
@@ -261,8 +263,6 @@ func _process(_delta):
 @warning_ignore(shadowed_variable)
 func _on_utterance_boundary(pos, id):
 	$RichTextLabel.text = "[bgcolor=yellow][color=black]" + ut_map[id].substr(0, pos) + "[/color][/bgcolor]" + ut_map[id].substr(pos, -1)
-	if size_changed == false:
-		resize_label()
 
 @warning_ignore(shadowed_variable)
 func _on_utterance_start(id):
@@ -273,7 +273,6 @@ func _on_utterance_end(id):
 	$RichTextLabel.text = "[bgcolor=yellow][color=black]" + ut_map[id] + "[/color][/bgcolor]"
 	$Log.text += "utterance %d ended\n" % [id]
 	ut_map.erase(id)
-	size_changed = false
 	DisplayServer.tts_resume()
 
 @warning_ignore(shadowed_variable)
@@ -281,7 +280,6 @@ func _on_utterance_error(id):
 	$RichTextLabel.text = ""
 	$Log.text += "utterance %d canceled\n" % [id]
 	ut_map.erase(id)
-	size_changed = false
 	$RichTextLabel.text = " U: Focus"
 	DisplayServer.tts_resume()
 
@@ -294,7 +292,7 @@ func _on_button_stop_pressed():
 	$RichTextLabel.scroll_active = false
 	$RichTextLabel.text = " U: Focus"
 
-func pause():
+func pause_resume():
 	if !DisplayServer.tts_is_paused():
 		DisplayServer.tts_pause()
 	else:
@@ -302,7 +300,7 @@ func pause():
 		
 func _on_button_toggle_pressed():
 	if !window_active and DisplayServer.tts_is_speaking() or !window_active and !DisplayServer.tts_is_paused() \
-	or window_active and !DisplayServer.tts_is_speaking() and !DisplayServer.tts_is_paused():
+	or window_active and !DisplayServer.tts_is_speaking() and !DisplayServer.tts_is_paused(): # yea this logic took me a while lol
 		if !OS.has_feature("web"):
 			if $Tree.get_selected():
 				$Log.text += "utterance %d queried\n" % [id]
@@ -315,7 +313,6 @@ func _on_button_toggle_pressed():
 						DisplayServer.tts_speak($Utterance.text, $Tree.get_selected().get_metadata(0), $HSliderVolume.value, $HSliderPitch.value, $HSliderRate.value, id, false)
 				id += 1
 			else:
-				# is it possible for alerts to be always on top?
 				if DisplayServer.window_get_flag(DisplayServer.WINDOW_FLAG_ALWAYS_ON_TOP):
 					$ButtonOnTop.emit_signal("pressed")
 				OS.alert("Select voice.")
@@ -333,11 +330,9 @@ func _on_button_toggle_pressed():
 						DisplayServer.tts_speak($Utterance.text, voice[0], $HSliderVolume.value, $HSliderPitch.value, $HSliderRate.value, id, false)
 				id += 1
 	else:
-		pause()
+		pause_resume()
 
 func _on_button_int_speak_pressed():
-#	if DisplayServer.tts_is_speaking(): # bad workaround to fix highlight because then you have to press r twice.
-#		DisplayServer.tts_stop()
 	if !OS.has_feature("web"):
 		if $Tree.get_selected():
 			$Log.text += "utterance %d interrupt\n" % [id]
@@ -350,7 +345,6 @@ func _on_button_int_speak_pressed():
 					DisplayServer.tts_speak($Utterance.text, $Tree.get_selected().get_metadata(0), $HSliderVolume.value, $HSliderPitch.value, $HSliderRate.value, id, true)
 			id += 1
 		else:
-			# is it possible for alerts to be always on top?
 			if DisplayServer.window_get_flag(DisplayServer.WINDOW_FLAG_ALWAYS_ON_TOP):
 					$ButtonOnTop.emit_signal("pressed")
 			OS.alert("Select voice.")
