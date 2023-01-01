@@ -1,16 +1,17 @@
 extends Control
 
-var id = 0
-var ut_map = {}
-var voices
-var last_copy = DisplayServer.clipboard_get()
+var id: int = 0
+var ut_map: Dictionary = {}
+var voices: Array
 enum MODES { INTERRUPT, QUEUE, MANUAL }
-var current_mode = MODES.INTERRUPT
-var mode_name = "INTERRUPT MODE"
-var stylebox_flat = StyleBoxFlat.new()
-var total_lines = 0
-var window_active = false
-var last_count
+var current_mode: int = MODES.INTERRUPT
+var mode_name: String = "INTERRUPT MODE"
+var stylebox_flat: StyleBoxFlat = StyleBoxFlat.new()
+var window_active: bool = false
+var last_copy: String = DisplayServer.clipboard_get()
+var last_count: int = 0
+var last_chars: int = 0
+var total_lines: int = 0
 
 # TODO
 # add logo/icon, see state of embedding pck, add releases to github, try linux primary clipboard?
@@ -61,12 +62,12 @@ func _ready():
 
 	DisplayServer.window_set_title("Clipboard Narrator - %s" % mode_name)
 	voices = DisplayServer.tts_get_voices()
-	var root = $Tree.create_item()
+	var root: TreeItem = $Tree.create_item()
 	$Tree.set_hide_root(true)
 	$Tree.set_column_title(0, "Name")
 	$Tree.set_column_title(1, "Language")
 	$Tree.set_column_titles_visible(true)
-	var child = $Tree.create_item(root)
+	var child: TreeItem = $Tree.create_item(root)
 	child.select(0)
 	for v in voices:
 		child.set_text(0, v["name"])
@@ -89,7 +90,7 @@ func _ready():
 func _unhandled_input(_event):
 	DisplayServer.window_set_title("Clipboard Narrator - %s" % mode_name)
 	if Input.is_action_just_pressed("tts_shift_tab") and !$Utterance.has_focus():
-		var voice = DisplayServer.tts_get_voices_for_language("en")
+		var voice: Array = DisplayServer.tts_get_voices_for_language("en")
 		if !voice.is_empty():
 			match current_mode:
 				0:
@@ -110,7 +111,7 @@ func _unhandled_input(_event):
 		id += 1
 
 	elif Input.is_action_just_pressed("tts_tab") and !$Utterance.has_focus():
-		var voice = DisplayServer.tts_get_voices_for_language("en")
+		var voice: Array = DisplayServer.tts_get_voices_for_language("en")
 		if !voice.is_empty():
 			match current_mode:
 				0:
@@ -204,12 +205,12 @@ func resize_label():
 
 @warning_ignore(integer_division)
 func format_suffix():
-	total_lines += $RichTextLabel.get_line_count()
-
 	var format_label: String
-	var lines_copied = " lines copied "
-	if $RichTextLabel.get_line_count() == 1:
+	var lines_copied: String = " lines copied "
+	if $RichTextLabel.get_line_count() == 1 and $RichTextLabel.get_total_character_count() != 0:
 		lines_copied = " line copied "
+	if $RichTextLabel.get_total_character_count() != 0:
+		total_lines += $RichTextLabel.get_line_count()
 
 	if total_lines >= 1000000000000000000:
 		format_label = lines_copied + "[rainbow freq=0.2 sat=10 val=20](" + str(total_lines / 1000000000000000000) + " Quintillion)[/rainbow]"
@@ -226,12 +227,18 @@ func format_suffix():
 	else:
 		format_label = lines_copied + "[color=WHITE](" + str(total_lines) + ")[/color]"
 
-	$LinesLabel.text = "[center]" + str($RichTextLabel.get_line_count()) + format_label + "[/center]"
+	if $RichTextLabel.get_total_character_count() == 0:
+		$LinesLabel.text = "[center]" + str($RichTextLabel.get_total_character_count()) + format_label + "[/center]"
+	else:
+		$LinesLabel.text = "[center]" + str($RichTextLabel.get_line_count()) + format_label + "[/center]"
 
 func _process(_delta):
 	if $RichTextLabel.get_line_count() != last_count:
 		last_count = $RichTextLabel.get_line_count()
 		resize_label()
+		
+	if $RichTextLabel.get_total_character_count() != last_chars:
+		last_chars = $RichTextLabel.get_total_character_count()
 		format_suffix()
 		
 	if DisplayServer.clipboard_get() != last_copy:
@@ -277,10 +284,8 @@ func _on_utterance_end(id):
 
 @warning_ignore(shadowed_variable)
 func _on_utterance_error(id):
-	$RichTextLabel.text = ""
 	$Log.text += "utterance %d canceled\n" % [id]
 	ut_map.erase(id)
-	$RichTextLabel.text = " U: Focus"
 	DisplayServer.tts_resume()
 
 func _on_button_stop_pressed():
@@ -288,9 +293,9 @@ func _on_button_stop_pressed():
 	if get_parent().gui_get_focus_owner() != null:
 		get_parent().gui_release_focus()
 		$RichTextLabel.set_focus_mode(Control.FOCUS_NONE)
+	$RichTextLabel.text = ""
 	$RichTextLabel.size.y = 27
 	$RichTextLabel.scroll_active = false
-	$RichTextLabel.text = " U: Focus"
 
 func pause_resume():
 	if !DisplayServer.tts_is_paused():
@@ -318,7 +323,7 @@ func _on_button_toggle_pressed():
 				OS.alert("Select voice.")
 
 		if OS.has_feature("web"):
-			var voice = DisplayServer.tts_get_voices_for_language("en")
+			var voice: Array = DisplayServer.tts_get_voices_for_language("en")
 			if !voice.is_empty():
 				$Log.text += "utterance %d queried\n" % [id]
 				match current_mode:
@@ -350,7 +355,7 @@ func _on_button_int_speak_pressed():
 			OS.alert("Select voice.")
 
 	if OS.has_feature("web"):
-		var voice = DisplayServer.tts_get_voices_for_language("en")
+		var voice: Array = DisplayServer.tts_get_voices_for_language("en")
 		if !voice.is_empty():
 			$Log.text += "utterance %d interrupt\n" % [id]
 			match current_mode:
@@ -375,7 +380,7 @@ func _on_h_slider_volume_value_changed(value):
 	$HSliderVolume/Value.text = "%d%%" % [value]
 
 func _on_button_demo_pressed():
-	var voice = DisplayServer.tts_get_voices_for_language("en")
+	var voice: Array = DisplayServer.tts_get_voices_for_language("en")
 	if !DisplayServer.tts_is_speaking() and !DisplayServer.tts_is_paused():
 		if !voice.is_empty():
 			ut_map[id] = $Utterance.placeholder_text
@@ -384,10 +389,10 @@ func _on_button_demo_pressed():
 
 func _on_line_edit_filter_name_text_changed(_new_text):
 	$Tree.clear()
-	var root = $Tree.create_item()
+	var root: TreeItem = $Tree.create_item()
 	for v in voices:
 		if ($LineEditFilterName.text.is_empty() || $LineEditFilterName.text.to_lower() in v["name"].to_lower()) && ($LineEditFilterLang.text.is_empty() || $LineEditFilterLang.text.to_lower() in v["language"].to_lower()):
-			var child = $Tree.create_item(root)
+			var child: TreeItem = $Tree.create_item(root)
 			child.set_text(0, v["name"])
 			child.set_metadata(0, v["id"])
 			child.set_text(1, v["language"])
@@ -439,7 +444,7 @@ func _on_button_on_top_pressed():
 		$ButtonFullscreen.disabled = false
 
 func _on_option_button_item_selected(index):
-	var current_selected = index
+	var current_selected: int = index
 
 	match current_selected:
 		0:

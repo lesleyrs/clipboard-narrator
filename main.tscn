@@ -239,7 +239,7 @@ placeholder_text = "Welcome to Clipboard Narrator.
 
 Press Ctrl-C anywhere to start text to speech. Copy 1 word to stop.
 Tab or Shift-Tab to change modes. Shift to increase slider speed.
-Enter and Escape to focus and unfocus text editor."
+Enter and Escape to focus and unfocus text editor. \"U\" to focus text."
 wrap_mode = 1
 draw_spaces = true
 
@@ -290,7 +290,6 @@ offset_bottom = 64.0
 theme_override_colors/font_shadow_color = Color(0, 0, 0, 1)
 theme_override_constants/shadow_outline_size = 1
 bbcode_enabled = true
-text = " U: Focus"
 scroll_active = false
 
 [connection signal="text_changed" from="LineEditFilterName" to="." method="_on_line_edit_filter_name_text_changed"]
