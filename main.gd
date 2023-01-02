@@ -12,15 +12,17 @@ var last_copy: String = DisplayServer.clipboard_get()
 var last_count: int = 0
 var last_chars: int = 0
 var total_lines: int = 0
+var total_chars: int = 0
 
 # TODO
-# add logo/icon, see state of embedding pck, add releases to github, try linux primary clipboard?
-# save clipboard in array 1-0 keys history, disable scroll and use scroll to line? shadowed variables not ignored beta 10
+# add logo/icon, add releases, what exactly causes can't open clipboard
+# try linux primary clipboard? save clipboard in array 1-0 keys history, allow changing slider while speaking
 # save total_lines/lang/colorpicker/sliders/mode/title/size/ontop/check all settings for loading
-# optionbutton text low resolution, what exactly causes can't open clipboard (doesn't matter really)
 
-# allow changing slider while speaking and stop richtext moving scrollbar or make it follow without stopping
+# stop richtext moving scrollbar or make it follow without stopping, disable scroll and use scroll to line?
 # web build cuts off + doesn't resume properly + focus notification not available + following highlight rarely works.
+# https://github.com/godotengine/godot-docs/issues/5121 shadowed variables not ignored beta 10
+# https://github.com/godotengine/godot/issues/70791 optionbutton text low resolution
 # https://github.com/godotengine/godot-demo-projects/pull/744 can't find non-english voices on windows at least
 # https://github.com/godotengine/godot/issues/39144 interrupt voice breaks the yellow highlight + can't scroll at all?
 # https://github.com/godotengine/godot/issues/3985 no smart word wrap mode for textedit
@@ -54,7 +56,7 @@ func _ready():
 	stylebox_flat.border_width_top = 1
 	stylebox_flat.border_width_left = 1
 	stylebox_flat.border_width_right = 1
-	if $ColorPickerButton.color.get_luminance() >= 0.5: # needed here for saving bg colour
+	if $ColorPickerButton.color.get_luminance() >= 0.5:
 		stylebox_flat.border_color = Color.BLACK
 	else:
 		stylebox_flat.border_color = Color.WHITE
@@ -88,7 +90,6 @@ func _ready():
 	DisplayServer.tts_set_utterance_callback(DisplayServer.TTS_UTTERANCE_BOUNDARY, Callable(self, "_on_utterance_boundary"))
 
 func _unhandled_input(_event):
-	DisplayServer.window_set_title("Clipboard Narrator - %s" % mode_name)
 	if Input.is_action_just_pressed("tts_shift_tab") and !$Utterance.has_focus():
 		var voice: Array = DisplayServer.tts_get_voices_for_language("en")
 		if !voice.is_empty():
@@ -109,6 +110,7 @@ func _unhandled_input(_event):
 					ut_map[id] = "QUEUE MODE"
 					DisplayServer.tts_speak("QUEUE MODE", voice[0], $HSliderVolume.value, $HSliderPitch.value, $HSliderRate.value, id, true)
 		id += 1
+		DisplayServer.window_set_title("Clipboard Narrator - %s" % mode_name)
 
 	elif Input.is_action_just_pressed("tts_tab") and !$Utterance.has_focus():
 		var voice: Array = DisplayServer.tts_get_voices_for_language("en")
@@ -130,9 +132,11 @@ func _unhandled_input(_event):
 					ut_map[id] = "INTERRUPT MODE"
 					DisplayServer.tts_speak("INTERRUPT MODE", voice[0], $HSliderVolume.value, $HSliderPitch.value, $HSliderRate.value, id, true)
 		id += 1
+		DisplayServer.window_set_title("Clipboard Narrator - %s" % mode_name)
 
 	if Input.is_action_just_pressed("tts_space"):
-		window_active = true
+		if window_active == false:
+			window_active = true # has to default to false incase user lost focus during load
 		$ButtonToggle.emit_signal("pressed")
 
 	if Input.is_action_just_pressed("tts_escape"):
@@ -205,42 +209,60 @@ func resize_label():
 
 @warning_ignore(integer_division)
 func format_suffix():
-	var format_label: String
-	var lines_copied: String = " lines copied "
-	if $RichTextLabel.get_line_count() == 1 and $RichTextLabel.get_total_character_count() != 0:
-		lines_copied = " line copied "
+	var format_chars: String
+	var format_lines: String
+	var chars_copied: String = " chars "
+	var lines_copied: String = " lines "
+	if DisplayServer.clipboard_get().length() == 1:
+		chars_copied = " char "
+	if DisplayServer.clipboard_get().count("\n") == 0 and DisplayServer.clipboard_get().length() > 0:
+		lines_copied = " line "
 	if $RichTextLabel.get_total_character_count() != 0:
+		total_chars += $RichTextLabel.get_total_character_count()
 		total_lines += $RichTextLabel.get_line_count()
 
+	if total_chars >= 1000000000000000000:
+		format_chars = chars_copied + "[rainbow freq=0.2 sat=10 val=20](" + str(total_chars / 1000000000000000000) + " Quintillion)[/rainbow]"
+	elif total_chars >= 1000000000000000:
+		format_chars = chars_copied + "[color=CORAL](" + str(total_chars / 1000000000000000) + "Q)[/color]"
+	elif total_chars >= 1000000000000:
+		format_chars = chars_copied + "[color=CYAN](" + str(total_chars / 1000000000000) + "T)[/color]"
+	elif total_chars >= 1000000000:
+		format_chars = chars_copied + "[color=INDIAN_RED](" + str(total_chars / 1000000000) + "B)[/color]"
+	elif total_chars >= 10000000:
+		format_chars = chars_copied + "[color=GREEN](" + str(total_chars / 1000000) + "M)[/color]"
+	elif total_chars >= 100000:
+		format_chars = chars_copied + "[color=YELLOW](" + str(total_chars / 1000) + "K)[/color]"
+	else:
+		format_chars = chars_copied + "[color=WHITE](" + str(total_chars) + ")[/color]"
+		
 	if total_lines >= 1000000000000000000:
-		format_label = lines_copied + "[rainbow freq=0.2 sat=10 val=20](" + str(total_lines / 1000000000000000000) + " Quintillion)[/rainbow]"
+		format_lines = lines_copied + "[rainbow freq=0.2 sat=10 val=20](" + str(total_lines / 1000000000000000000) + " Quintillion)[/rainbow]"
 	elif total_lines >= 1000000000000000:
-		format_label = lines_copied + "[color=CORAL](" + str(total_lines / 1000000000000000) + "Q)[/color]"
+		format_lines = lines_copied + "[color=CORAL](" + str(total_lines / 1000000000000000) + "Q)[/color]"
 	elif total_lines >= 1000000000000:
-		format_label = lines_copied + "[color=CYAN](" + str(total_lines / 1000000000000) + "T)[/color]"
+		format_lines = lines_copied + "[color=CYAN](" + str(total_lines / 1000000000000) + "T)[/color]"
 	elif total_lines >= 1000000000:
-		format_label = lines_copied + "[color=INDIAN_RED](" + str(total_lines / 1000000000) + "B)[/color]"
+		format_lines = lines_copied + "[color=INDIAN_RED](" + str(total_lines / 1000000000) + "B)[/color]"
 	elif total_lines >= 10000000:
-		format_label = lines_copied + "[color=GREEN](" + str(total_lines / 1000000) + "M)[/color]"
+		format_lines = lines_copied + "[color=GREEN](" + str(total_lines / 1000000) + "M)[/color]"
 	elif total_lines >= 100000:
-		format_label = lines_copied + "[color=YELLOW](" + str(total_lines / 1000) + "K)[/color]"
+		format_lines = lines_copied + "[color=YELLOW](" + str(total_lines / 1000) + "K)[/color]"
 	else:
-		format_label = lines_copied + "[color=WHITE](" + str(total_lines) + ")[/color]"
+		format_lines = lines_copied + "[color=WHITE](" + str(total_lines) + ")[/color]"
 
-	if $RichTextLabel.get_total_character_count() == 0:
-		$LinesLabel.text = "[center]" + str($RichTextLabel.get_total_character_count()) + format_label + "[/center]"
-	else:
-		$LinesLabel.text = "[center]" + str($RichTextLabel.get_line_count()) + format_label + "[/center]"
+	$CharsLabel.text = "[center]" + str(DisplayServer.clipboard_get().length()) + format_chars + "[/center]"
+	$LinesLabel.text = "[center]" + str(DisplayServer.clipboard_get().count("\n")) + format_lines + "[/center]"
 
 func _process(_delta):
 	if $RichTextLabel.get_line_count() != last_count:
 		last_count = $RichTextLabel.get_line_count()
 		resize_label()
-		
+
 	if $RichTextLabel.get_total_character_count() != last_chars:
 		last_chars = $RichTextLabel.get_total_character_count()
 		format_suffix()
-		
+
 	if DisplayServer.clipboard_get() != last_copy:
 		match current_mode:
 			0:
@@ -258,7 +280,10 @@ func _process(_delta):
 					pause_resume()
 					last_copy = DisplayServer.clipboard_get()
 			2:
+				if !$Utterance.has_focus():
+					$Utterance.grab_focus.call_deferred()
 				last_copy = DisplayServer.clipboard_get()
+
 
 	if DisplayServer.tts_is_speaking():
 		$Label.text = "Speaking..."
@@ -289,6 +314,8 @@ func _on_utterance_error(id):
 	DisplayServer.tts_resume()
 
 func _on_button_stop_pressed():
+	if !DisplayServer.tts_is_speaking() and current_mode == MODES.MANUAL:
+		$Utterance.text = ""
 	DisplayServer.tts_stop()
 	if get_parent().gui_get_focus_owner() != null:
 		get_parent().gui_release_focus()
@@ -302,7 +329,7 @@ func pause_resume():
 		DisplayServer.tts_pause()
 	else:
 		DisplayServer.tts_resume()
-		
+
 func _on_button_toggle_pressed():
 	if !window_active and DisplayServer.tts_is_speaking() or !window_active and !DisplayServer.tts_is_paused() \
 	or window_active and !DisplayServer.tts_is_speaking() and !DisplayServer.tts_is_paused(): # yea this logic took me a while lol
@@ -462,12 +489,17 @@ func _on_option_button_item_selected(index):
 		6:
 			DisplayServer.window_set_size(Vector2(1600, 900))
 
+	DisplayServer.window_set_position(Vector2(DisplayServer.screen_get_position(DisplayServer.window_get_current_screen())) + DisplayServer.screen_get_size()*0.5 - DisplayServer.window_get_size()*0.5)
+
 func _on_button_folder_pressed():
 	OS.shell_open(ProjectSettings.globalize_path("user://"))
-	
+
 func _notification(what):
 	match what:
 		MainLoop.NOTIFICATION_APPLICATION_FOCUS_IN:
 			window_active = true
 		MainLoop.NOTIFICATION_APPLICATION_FOCUS_OUT:
 			window_active = false
+
+func _on_button_toggle_mouse_entered():  # has to default to false incase user lost focus during load
+	window_active = true

@@ -11,22 +11,21 @@ grow_horizontal = 2
 grow_vertical = 2
 script = ExtResource("1_qjk75")
 metadata/_edit_lock_ = true
-metadata/_edit_group_ = true
 
 [node name="LineEditFilterName" type="LineEdit" parent="."]
 layout_mode = 1
 offset_left = 96.0
-offset_top = 336.0
+offset_top = 296.0
 offset_right = 208.0
-offset_bottom = 371.0
+offset_bottom = 331.0
 placeholder_text = "N: Name"
 
 [node name="LineEditFilterLang" type="LineEdit" parent="."]
 layout_mode = 0
 offset_left = 224.0
-offset_top = 336.0
+offset_top = 296.0
 offset_right = 336.0
-offset_bottom = 371.0
+offset_bottom = 331.0
 placeholder_text = "L: Language"
 
 [node name="Label" type="Label" parent="LineEditFilterLang"]
@@ -41,7 +40,7 @@ text = "Filter:"
 [node name="Tree" type="Tree" parent="."]
 layout_mode = 0
 offset_left = 16.0
-offset_top = 384.0
+offset_top = 352.0
 offset_right = 336.0
 offset_bottom = 644.0
 focus_mode = 0
@@ -120,17 +119,30 @@ offset_right = 160.0
 offset_bottom = 275.0
 focus_mode = 0
 
-[node name="LinesLabel" type="RichTextLabel" parent="."]
-layout_mode = 0
-offset_left = 16.0
-offset_top = 288.0
-offset_right = 336.0
-offset_bottom = 323.0
+[node name="CharsLabel" type="RichTextLabel" parent="."]
+layout_mode = 1
+offset_left = 896.0
+offset_top = 528.0
+offset_right = 1152.0
+offset_bottom = 568.0
 theme_override_colors/font_shadow_color = Color(0, 0, 0, 1)
 theme_override_constants/shadow_outline_size = 1
 theme_override_font_sizes/normal_font_size = 24
 bbcode_enabled = true
-text = "[center]0 lines copied, 0 total[/center]"
+text = "[center]0 chars (0)[/center]"
+scroll_active = false
+
+[node name="LinesLabel" type="RichTextLabel" parent="."]
+layout_mode = 0
+offset_left = 896.0
+offset_top = 592.0
+offset_right = 1152.0
+offset_bottom = 632.0
+theme_override_colors/font_shadow_color = Color(0, 0, 0, 1)
+theme_override_constants/shadow_outline_size = 1
+theme_override_font_sizes/normal_font_size = 24
+bbcode_enabled = true
+text = "[center]0 lines (0)[/center]"
 scroll_active = false
 
 [node name="HSliderRate" type="HSlider" parent="."]
@@ -239,7 +251,7 @@ placeholder_text = "Welcome to Clipboard Narrator.
 
 Press Ctrl-C anywhere to start text to speech. Copy 1 word to stop.
 Tab or Shift-Tab to change modes. Shift to increase slider speed.
-Enter and Escape to focus and unfocus text editor. \"U\" to focus text."
+Enter & Escape to focus and unfocus text editor. \"U\" to focus speech."
 wrap_mode = 1
 draw_spaces = true
 
@@ -248,7 +260,7 @@ layout_mode = 0
 offset_left = 912.0
 offset_top = 72.0
 offset_right = 1136.0
-offset_bottom = 644.0
+offset_bottom = 516.0
 focus_mode = 0
 editable = false
 context_menu_enabled = false
@@ -300,6 +312,7 @@ scroll_active = false
 [connection signal="pressed" from="ButtonFolder" to="." method="_on_button_folder_pressed"]
 [connection signal="pressed" from="ButtonIntSpeak" to="." method="_on_button_int_speak_pressed"]
 [connection signal="pressed" from="ButtonStop" to="." method="_on_button_stop_pressed"]
+[connection signal="mouse_entered" from="ButtonToggle" to="." method="_on_button_toggle_mouse_entered"]
 [connection signal="pressed" from="ButtonToggle" to="." method="_on_button_toggle_pressed"]
 [connection signal="item_selected" from="OptionButton" to="." method="_on_option_button_item_selected"]
 [connection signal="value_changed" from="HSliderRate" to="." method="_on_h_slider_rate_value_changed"]
