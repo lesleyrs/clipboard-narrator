@@ -13,6 +13,7 @@ var last_count: int = 0
 var last_chars: int = 0
 var total_lines: int = 0
 var total_chars: int = 0
+const INT_MAX: int = 9223372036854775807
 
 # TODO
 # add logo/icon, add releases, what exactly causes can't open clipboard
@@ -218,8 +219,14 @@ func format_suffix():
 	if DisplayServer.clipboard_get().count("\n") == 0 and DisplayServer.clipboard_get().length() > 0:
 		lines_copied = " line "
 	if $RichTextLabel.get_total_character_count() != 0:
-		total_chars += $RichTextLabel.get_total_character_count()
-		total_lines += $RichTextLabel.get_line_count()
+		if total_chars != INT_MAX:
+			total_chars += $RichTextLabel.get_total_character_count()
+			if total_chars < 0:
+				total_chars = INT_MAX
+		if total_lines != INT_MAX:
+			total_lines += $RichTextLabel.get_line_count()
+			if total_lines < 0:
+				total_lines = INT_MAX
 
 	if total_chars >= 1000000000000000000:
 		format_chars = chars_copied + "[rainbow freq=0.2 sat=10 val=20](" + str(total_chars / 1000000000000000000) + " Quintillion)[/rainbow]"
