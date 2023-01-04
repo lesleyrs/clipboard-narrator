@@ -582,5 +582,5 @@ func _notification(what):
 		MainLoop.NOTIFICATION_APPLICATION_FOCUS_OUT:
 			window_active = false
 
-func _on_button_toggle_mouse_entered():  # has to default to false incase user lost focus during load
+func _on_button_toggle_mouse_entered(): # has to default to false incase user lost focus during load
 	window_active = true
