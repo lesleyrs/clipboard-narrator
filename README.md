@@ -7,7 +7,7 @@ Based on: https://github.com/godotengine/godot-demo-projects/pull/744
 
 I made this for myself to save me from doing more reading than needed, but I think it's a good tool anyone can make use of. Thx to [bruvzg](https://github.com/bruvzg) for making it possible! :+1:
 
-![clipboard-narrator](https://user-images.githubusercontent.com/19632758/209919039-a4bc489e-7da1-4272-81be-cf920e1781db.png)
+![clipboard-narrator](https://user-images.githubusercontent.com/19632758/210650475-b0b2d8f7-2791-43cc-88cf-d7060cb74884.png)
 
 On desktop it'll be able to read from your clipboard in the background. No internet connection needed. Smart stopping voice added by copying 1 word[^1], this allows you to start and stop a voice without requiring window focus. Auto-saves textedit to .txt file and settings to .dat file on closing, this means you should close the application before deleting the saves to reset settings.
 
