@@ -8,7 +8,7 @@ var current_mode: int = MODES.INTERRUPT
 var mode_name: String
 var stylebox_flat: StyleBoxFlat = StyleBoxFlat.new()
 var window_focus: bool = false
-var last_copy: String = DisplayServer.clipboard_get()
+var last_copy: Array[String] = [DisplayServer.clipboard_get(), "empty", "empty", "empty", "empty", "empty", "empty", "empty", "empty", "empty"]
 var last_count: int = 0
 var last_chars: int = 0
 var total_lines: int = 0
@@ -17,6 +17,7 @@ const INT_MAX: int = 9223372036854775807
 var save_path: String = "user://save.dat"
 var file_path: String = "user://file.txt"
 var save_count: int = 0
+var key_array: Array[int] = [KEY_1, KEY_2, KEY_3, KEY_4, KEY_5, KEY_6, KEY_7, KEY_8, KEY_9, KEY_0]
 
 # TODO
 # add logo/icon, add releases, try linux primary clipboard? allow changing slider while speaking
@@ -108,7 +109,34 @@ func _ready():
 
 	DisplayServer.window_set_title("Clipboard Narrator - %s" % mode_name)
 		
-func _unhandled_input(_event):
+func _unhandled_input(event):
+	if event is InputEventKey and event.is_pressed() and key_array.has(event.keycode):
+		if !OS.has_feature("web"):
+			if $Tree.get_selected():
+				$Log.text += "utterance %d interrupt\n" % [id]
+				if event.keycode == KEY_0:
+					DisplayServer.tts_speak(last_copy[9], $Tree.get_selected().get_metadata(0), $HSliderVolume.value, $HSliderPitch.value, $HSliderRate.value, id, true)
+					ut_map[id] = last_copy[9]
+				else:
+					DisplayServer.tts_speak(last_copy[int(OS.get_keycode_string(event.keycode)) - 1], $Tree.get_selected().get_metadata(0), $HSliderVolume.value, $HSliderPitch.value, $HSliderRate.value, id, true)
+					ut_map[id] = last_copy[int(OS.get_keycode_string(event.keycode)) - 1]
+				id += 1
+			else:
+				if DisplayServer.window_get_flag(DisplayServer.WINDOW_FLAG_ALWAYS_ON_TOP):
+						$ButtonOnTop.emit_signal("pressed")
+				OS.alert("Select voice.")
+
+		if OS.has_feature("web"):
+			var voice: Array = DisplayServer.tts_get_voices_for_language("en")
+			if !voice.is_empty():
+				if event.keycode == KEY_0:
+					DisplayServer.tts_speak(last_copy[9], voice[0], $HSliderVolume.value, $HSliderPitch.value, $HSliderRate.value, id, true)
+					ut_map[id] = last_copy[9]
+				else:
+					DisplayServer.tts_speak(last_copy[int(OS.get_keycode_string(event.keycode)) - 1], voice[0], $HSliderVolume.value, $HSliderPitch.value, $HSliderRate.value, id, true)
+					ut_map[id] = last_copy[int(OS.get_keycode_string(event.keycode)) - 1]
+				id += 1
+		
 	if Input.is_action_just_pressed("tts_shift_tab") and !$Utterance.has_focus():
 		var voice: Array = DisplayServer.tts_get_voices_for_language("en")
 		if !voice.is_empty():
@@ -347,26 +375,38 @@ func _process(_delta):
 		last_chars = $RichTextLabel.get_total_character_count()
 		format_suffix()
 
-	if DisplayServer.clipboard_get() != last_copy:
+	if DisplayServer.clipboard_get() != last_copy[0]:
 		match current_mode:
 			0:
 				if DisplayServer.clipboard_get().count(" ") > 1 or $Utterance.has_focus():
 					$ButtonIntSpeak.emit_signal("pressed")
-					last_copy = DisplayServer.clipboard_get()
+					last_copy.push_front(DisplayServer.clipboard_get())
 				else:
 					$ButtonStop.emit_signal("pressed")
-					last_copy = DisplayServer.clipboard_get()
+					if last_copy[0].count(" ") > 1 or $Utterance.has_focus():
+						last_copy.push_front(DisplayServer.clipboard_get())
+					else:
+						last_copy[0] = DisplayServer.clipboard_get()
 			1:
 				if DisplayServer.clipboard_get().count(" ") > 1 or $Utterance.has_focus():
 					$ButtonToggle.emit_signal("pressed")
-					last_copy = DisplayServer.clipboard_get()
+					last_copy.push_front(DisplayServer.clipboard_get())
 				else:
 					pause_resume()
-					last_copy = DisplayServer.clipboard_get()
+					if last_copy[0].count(" ") > 1 or $Utterance.has_focus():
+						last_copy.push_front(DisplayServer.clipboard_get())
+					else:
+						last_copy[0] = DisplayServer.clipboard_get()
 			2:
 				if !$Utterance.has_focus():
 					$Utterance.grab_focus.call_deferred()
-				last_copy = DisplayServer.clipboard_get()
+				if last_copy[0].count(" ") > 1 or $Utterance.has_focus():
+					last_copy.push_front(DisplayServer.clipboard_get())
+				else:
+					last_copy[0] = DisplayServer.clipboard_get()
+				
+		if last_copy.size() > 10:
+			last_copy.pop_back()
 
 	if DisplayServer.tts_is_speaking():
 		$Label.text = "Speaking..."
