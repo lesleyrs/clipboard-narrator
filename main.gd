@@ -93,9 +93,11 @@ func _ready():
 	$LineEditFilterLang.emit_signal("text_changed", $LineEditFilterLang.text)
 	$ColorPickerButton.emit_signal("color_changed", $ColorPickerButton.color)
 	$OptionButton.emit_signal("item_selected", $OptionButton.selected)
-	if $ButtonOnTop.button_pressed == true:
+	if $ButtonOnTop.button_pressed:
 		$ButtonOnTop.emit_signal("pressed")
-
+	if $ButtonFullscreen.button_pressed:
+		$ButtonFullscreen.emit_signal("pressed")
+		
 	match current_mode:
 		0:
 			mode_name = "INTERRUPT MODE"
@@ -235,6 +237,7 @@ func save_files():
 		save.store_var($ColorPickerButton.color)
 		save.store_var($OptionButton.selected)
 		save.store_var($ButtonOnTop.button_pressed)
+		save.store_var($ButtonFullscreen.button_pressed)
 
 	var file = FileAccess.open(file_path, FileAccess.WRITE)
 	if FileAccess.get_open_error() == OK:
@@ -256,6 +259,7 @@ func load_files():
 				$ColorPickerButton.color = save.get_var()
 				$OptionButton.selected = save.get_var()
 				$ButtonOnTop.button_pressed = save.get_var()
+				$ButtonFullscreen.button_pressed = save.get_var()
 
 	if FileAccess.file_exists(file_path):
 		if FileAccess.get_open_error() == OK:
@@ -472,7 +476,7 @@ func _on_button_int_speak_pressed():
 func _on_button_clear_log_pressed():
 	save_files()
 	save_count += 1
-	$Log.text = "\nfile saved #%s\n" % [save_count]
+	$Log.text = "\nfiles saved #%s\n" % [save_count]
 
 func _on_h_slider_rate_value_changed(value):
 	$HSliderRate/Value.text = "%.2fx" % [value]
