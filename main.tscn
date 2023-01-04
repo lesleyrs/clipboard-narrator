@@ -11,6 +11,7 @@ grow_horizontal = 2
 grow_vertical = 2
 script = ExtResource("1_qjk75")
 metadata/_edit_lock_ = true
+metadata/_edit_group_ = true
 
 [node name="LineEditFilterName" type="LineEdit" parent="."]
 layout_mode = 1
@@ -82,7 +83,7 @@ offset_top = 72.0
 offset_right = 160.0
 offset_bottom = 107.0
 focus_mode = 0
-text = "O: Save Folder"
+text = "O: Open Folder"
 
 [node name="ButtonIntSpeak" type="Button" parent="."]
 layout_mode = 1
@@ -275,7 +276,7 @@ layout_mode = 0
 offset_right = 224.0
 offset_bottom = 35.0
 focus_mode = 0
-text = "Clear"
+text = "Y: Clear/Save"
 
 [node name="ColorPickerButton" type="ColorPickerButton" parent="."]
 layout_mode = 0

@@ -5,7 +5,7 @@ var ut_map: Dictionary = {}
 var voices: Array
 enum MODES { INTERRUPT, QUEUE, MANUAL }
 var current_mode: int = MODES.INTERRUPT
-var mode_name: String = "INTERRUPT MODE"
+var mode_name: String
 var stylebox_flat: StyleBoxFlat = StyleBoxFlat.new()
 var window_active: bool = false
 var last_copy: String = DisplayServer.clipboard_get()
@@ -14,11 +14,13 @@ var last_chars: int = 0
 var total_lines: int = 0
 var total_chars: int = 0
 const INT_MAX: int = 9223372036854775807
+var save_path: String = "user://save.dat"
+var file_path: String = "user://file.txt"
+var save_count: int = 0
 
 # TODO
-# add logo/icon, add releases, what exactly causes can't open clipboard
-# try linux primary clipboard? save clipboard in array 1-0 keys history, allow changing slider while speaking
-# save total_lines/lang/colorpicker/sliders/mode/title/size/ontop/check all settings for loading
+# add logo/icon, add releases, try linux primary clipboard? add auto-save with timer
+# save clipboard in array 1-0 keys history, allow changing slider while speaking
 
 # stop richtext moving scrollbar or make it follow without stopping, disable scroll and use scroll to line?
 # web build cuts off + doesn't resume properly + focus notification not available + following highlight rarely works.
@@ -34,14 +36,6 @@ const INT_MAX: int = 9223372036854775807
 # you should strip out all XML markup before calling tts_speak().
 
 func _ready():
-	format_suffix()
-
-	if OS.has_feature("web"):
-		$ButtonFolder.queue_free() # see if this one works on web export
-		$ButtonFullscreen.queue_free()
-		$ButtonOnTop.queue_free()
-		$OptionButton.queue_free()
-
 	$OptionButton.add_item("P: 854x480")
 	$OptionButton.add_item("P: 960x540")
 	$OptionButton.add_item("P: 1024x576")
@@ -52,18 +46,22 @@ func _ready():
 	$OptionButton.select(3)
 
 	$ColorPickerButton.color = "4d4d4d"
-	stylebox_flat.bg_color = $ColorPickerButton.color
+
+	load_files()
+	format_suffix()
+
+	if OS.has_feature("web"):
+		$ButtonFolder.queue_free() # see if this one works on web export
+		$ButtonFullscreen.queue_free()
+		$ButtonOnTop.queue_free()
+		$OptionButton.queue_free()
+
 	stylebox_flat.border_width_bottom = 1
 	stylebox_flat.border_width_top = 1
 	stylebox_flat.border_width_left = 1
 	stylebox_flat.border_width_right = 1
-	if $ColorPickerButton.color.get_luminance() >= 0.5:
-		stylebox_flat.border_color = Color.BLACK
-	else:
-		stylebox_flat.border_color = Color.WHITE
 	$RichTextLabel.add_theme_stylebox_override("normal", stylebox_flat)
 
-	DisplayServer.window_set_title("Clipboard Narrator - %s" % mode_name)
 	voices = DisplayServer.tts_get_voices()
 	var root: TreeItem = $Tree.create_item()
 	$Tree.set_hide_root(true)
@@ -76,6 +74,7 @@ func _ready():
 		child.set_text(0, v["name"])
 		child.set_metadata(0, v["id"])
 		child.set_text(1, v["language"])
+
 	if OS.has_feature("web"):
 		$Log.text += "\nEnglish voice available\n"
 	elif voices.size() == 1:
@@ -89,6 +88,23 @@ func _ready():
 	DisplayServer.tts_set_utterance_callback(DisplayServer.TTS_UTTERANCE_ENDED, Callable(self, "_on_utterance_end"))
 	DisplayServer.tts_set_utterance_callback(DisplayServer.TTS_UTTERANCE_CANCELED, Callable(self, "_on_utterance_error"))
 	DisplayServer.tts_set_utterance_callback(DisplayServer.TTS_UTTERANCE_BOUNDARY, Callable(self, "_on_utterance_boundary"))
+
+	$LineEditFilterName.emit_signal("text_changed", $LineEditFilterName.text)
+	$LineEditFilterLang.emit_signal("text_changed", $LineEditFilterLang.text)
+	$ColorPickerButton.emit_signal("color_changed", $ColorPickerButton.color)
+	$OptionButton.emit_signal("item_selected", $OptionButton.selected)
+	if $ButtonOnTop.button_pressed == true:
+		$ButtonOnTop.emit_signal("pressed")
+
+	match current_mode:
+		0:
+			mode_name = "INTERRUPT MODE"
+		1:
+			mode_name = "QUEUE MODE"
+		2:
+			mode_name = "MANUAL MODE"
+
+	DisplayServer.window_set_title("Clipboard Narrator - %s" % mode_name)
 
 func _unhandled_input(_event):
 	if Input.is_action_just_pressed("tts_shift_tab") and !$Utterance.has_focus():
@@ -202,6 +218,50 @@ func _unhandled_input(_event):
 		and DisplayServer.window_get_mode() != DisplayServer.WINDOW_MODE_MAXIMIZED:
 			$OptionButton.show_popup()
 
+	if Input.is_action_just_pressed("tts_y"):
+		$Log/ButtonClearLog.emit_signal("pressed")
+
+func save_files():
+	var save = FileAccess.open(save_path, FileAccess.WRITE)
+	if FileAccess.get_open_error() == OK:
+		save.store_var(total_chars)
+		save.store_var(total_lines)
+		save.store_var(current_mode)
+		save.store_var($HSliderRate.value)
+		save.store_var($HSliderPitch.value)
+		save.store_var($HSliderVolume.value)
+		save.store_var($LineEditFilterName.text)
+		save.store_var($LineEditFilterLang.text)
+		save.store_var($ColorPickerButton.color)
+		save.store_var($OptionButton.selected)
+		save.store_var($ButtonOnTop.button_pressed)
+
+	var file = FileAccess.open(file_path, FileAccess.WRITE)
+	if FileAccess.get_open_error() == OK:
+		file.store_string($Utterance.text)
+
+func load_files():
+	if FileAccess.file_exists(save_path):
+		if FileAccess.get_open_error() == OK:
+			var save = FileAccess.open(save_path, FileAccess.READ)
+			if save.get_length() > 0:
+				total_chars = save.get_var()
+				total_lines = save.get_var()
+				current_mode = save.get_var()
+				$HSliderRate.value = save.get_var()
+				$HSliderPitch.value = save.get_var()
+				$HSliderVolume.value = save.get_var()
+				$LineEditFilterName.text = save.get_var()
+				$LineEditFilterLang.text = save.get_var()
+				$ColorPickerButton.color = save.get_var()
+				$OptionButton.selected = save.get_var()
+				$ButtonOnTop.button_pressed = save.get_var()
+
+	if FileAccess.file_exists(file_path):
+		if FileAccess.get_open_error() == OK:
+			var file = FileAccess.open(file_path, FileAccess.READ)
+			$Utterance.text = file.get_as_text()
+
 func resize_label():
 	$RichTextLabel.size.y = $RichTextLabel.get_line_count() * 27
 	if $RichTextLabel.size.y >= 616:
@@ -216,7 +276,7 @@ func format_suffix():
 	var lines_copied: String = " lines "
 	if DisplayServer.clipboard_get().length() == 1:
 		chars_copied = " char "
-	if DisplayServer.clipboard_get().count("\n") == 0 and DisplayServer.clipboard_get().length() > 0:
+	if DisplayServer.clipboard_get().count("\n") == 0 and !DisplayServer.clipboard_get().is_empty():
 		lines_copied = " line "
 	if $RichTextLabel.get_total_character_count() != 0:
 		if total_chars != INT_MAX:
@@ -229,7 +289,7 @@ func format_suffix():
 				total_lines = INT_MAX
 
 	if total_chars >= 1000000000000000000:
-		format_chars = chars_copied + "[rainbow freq=0.2 sat=10 val=20](" + str(total_chars / 1000000000000000000) + " Quintillion)[/rainbow]"
+		format_chars = chars_copied + "[rainbow freq=0.2 sat=10 val=20](" + str(total_chars / 1000000000000000000) + " Quin)[/rainbow]"
 	elif total_chars >= 1000000000000000:
 		format_chars = chars_copied + "[color=CORAL](" + str(total_chars / 1000000000000000) + "Q)[/color]"
 	elif total_chars >= 1000000000000:
@@ -242,9 +302,9 @@ func format_suffix():
 		format_chars = chars_copied + "[color=YELLOW](" + str(total_chars / 1000) + "K)[/color]"
 	else:
 		format_chars = chars_copied + "[color=WHITE](" + str(total_chars) + ")[/color]"
-		
+
 	if total_lines >= 1000000000000000000:
-		format_lines = lines_copied + "[rainbow freq=0.2 sat=10 val=20](" + str(total_lines / 1000000000000000000) + " Quintillion)[/rainbow]"
+		format_lines = lines_copied + "[rainbow freq=0.2 sat=10 val=20](" + str(total_lines / 1000000000000000000) + " Quin)[/rainbow]"
 	elif total_lines >= 1000000000000000:
 		format_lines = lines_copied + "[color=CORAL](" + str(total_lines / 1000000000000000) + "Q)[/color]"
 	elif total_lines >= 1000000000000:
@@ -258,8 +318,18 @@ func format_suffix():
 	else:
 		format_lines = lines_copied + "[color=WHITE](" + str(total_lines) + ")[/color]"
 
-	$CharsLabel.text = "[center]" + str(DisplayServer.clipboard_get().length()) + format_chars + "[/center]"
-	$LinesLabel.text = "[center]" + str(DisplayServer.clipboard_get().count("\n")) + format_lines + "[/center]"
+	if current_mode == MODES.MANUAL:
+		$CharsLabel.text = "[center]" + str($RichTextLabel.get_total_character_count()) + format_chars + "[/center]"
+		if !$RichTextLabel.get_total_character_count() > 0:
+			$LinesLabel.text = "[center]" + str($RichTextLabel.get_line_count() - 1) + format_lines + "[/center]"
+		else:
+			$LinesLabel.text = "[center]" + str($RichTextLabel.get_line_count()) + format_lines + "[/center]"
+	else:
+		$CharsLabel.text = "[center]" + str(DisplayServer.clipboard_get().length()) + format_chars + "[/center]"
+		if !DisplayServer.clipboard_get().is_empty():
+			$LinesLabel.text = "[center]" + str(DisplayServer.clipboard_get().count("\n") + 1) + format_lines + "[/center]"
+		else:
+			$LinesLabel.text = "[center]" + str(DisplayServer.clipboard_get().count("\n")) + format_lines + "[/center]"
 
 func _process(_delta):
 	if $RichTextLabel.get_line_count() != last_count:
@@ -321,8 +391,6 @@ func _on_utterance_error(id):
 	DisplayServer.tts_resume()
 
 func _on_button_stop_pressed():
-	if !DisplayServer.tts_is_speaking() and current_mode == MODES.MANUAL:
-		$Utterance.text = ""
 	DisplayServer.tts_stop()
 	if get_parent().gui_get_focus_owner() != null:
 		get_parent().gui_release_focus()
@@ -402,7 +470,9 @@ func _on_button_int_speak_pressed():
 			id += 1
 
 func _on_button_clear_log_pressed():
-	$Log.text = "\n"
+	save_files()
+	save_count += 1
+	$Log.text = "\nfile saved #%s\n" % [save_count]
 
 func _on_h_slider_rate_value_changed(value):
 	$HSliderRate/Value.text = "%.2fx" % [value]
@@ -436,9 +506,9 @@ func _on_log_text_set():
 	$Log.scroll_vertical = $Log.text.length()
 
 func _on_color_picker_button_color_changed(color):
-	RenderingServer.set_default_clear_color($ColorPickerButton.color)
-	stylebox_flat.bg_color = $ColorPickerButton.color
-	if $ColorPickerButton.color.get_luminance() >= 0.5:
+	RenderingServer.set_default_clear_color(color)
+	stylebox_flat.bg_color = color
+	if color.get_luminance() >= 0.5:
 		stylebox_flat.border_color = Color.BLACK
 	else:
 		stylebox_flat.border_color = Color.WHITE
