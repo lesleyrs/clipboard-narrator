@@ -7,7 +7,7 @@ enum MODES { INTERRUPT, QUEUE, MANUAL }
 var current_mode: int = MODES.INTERRUPT
 var mode_name: String
 var stylebox_flat: StyleBoxFlat = StyleBoxFlat.new()
-var window_active: bool = false
+var window_focus: bool = false
 var last_copy: String = DisplayServer.clipboard_get()
 var last_count: int = 0
 var last_chars: int = 0
@@ -412,8 +412,8 @@ func pause_resume():
 		DisplayServer.tts_resume()
 
 func _on_button_toggle_pressed():
-	if !window_active and DisplayServer.tts_is_speaking() or !window_active and !DisplayServer.tts_is_paused() \
-	or window_active and !DisplayServer.tts_is_speaking() and !DisplayServer.tts_is_paused(): # yea this logic took me a while lol
+	if !window_focus and DisplayServer.tts_is_speaking() or !window_focus and !DisplayServer.tts_is_paused() \
+	or window_focus and !DisplayServer.tts_is_speaking() and !DisplayServer.tts_is_paused(): # yea this logic took me a while lol
 		if !OS.has_feature("web"):
 			if $Tree.get_selected():
 				$Log.text += "utterance %d queried\n" % [id]
@@ -586,8 +586,8 @@ func _on_button_folder_pressed():
 func _notification(what):
 	match what:
 		NOTIFICATION_WM_WINDOW_FOCUS_IN:
-			window_active = true
+			window_focus = true
 		NOTIFICATION_WM_WINDOW_FOCUS_OUT:
-			window_active = false
+			window_focus = false
 		NOTIFICATION_WM_CLOSE_REQUEST:
 			$Log/ButtonClearLog.emit_signal("pressed")
