@@ -19,8 +19,7 @@ var file_path: String = "user://file.txt"
 var save_count: int = 0
 
 # TODO
-# add logo/icon, add releases, try linux primary clipboard? add auto-save with timer
-# save clipboard in array 1-0 keys history, allow changing slider while speaking
+# add logo/icon, add releases, try linux primary clipboard? allow changing slider while speaking
 
 # stop richtext moving scrollbar or make it follow without stopping, disable scroll and use scroll to line?
 # web build cuts off + doesn't resume properly + focus notification not available + following highlight rarely works.
@@ -97,7 +96,7 @@ func _ready():
 		$ButtonOnTop.emit_signal("pressed")
 	if $ButtonFullscreen.button_pressed:
 		$ButtonFullscreen.emit_signal("pressed")
-		
+
 	match current_mode:
 		0:
 			mode_name = "INTERRUPT MODE"
@@ -107,7 +106,7 @@ func _ready():
 			mode_name = "MANUAL MODE"
 
 	DisplayServer.window_set_title("Clipboard Narrator - %s" % mode_name)
-
+		
 func _unhandled_input(_event):
 	if Input.is_action_just_pressed("tts_shift_tab") and !$Utterance.has_focus():
 		var voice: Array = DisplayServer.tts_get_voices_for_language("en")
@@ -167,7 +166,12 @@ func _unhandled_input(_event):
 
 	if !$Utterance.has_focus():
 		if Input.is_action_just_pressed("tts_enter") or Input.is_action_just_pressed("tts_i"):
-			$Utterance.grab_focus.call_deferred()
+				if $LineEditFilterLang.has_focus():
+					$LineEditFilterLang.release_focus()
+				elif $LineEditFilterName.has_focus():
+					$LineEditFilterName.release_focus()
+				else:
+					$Utterance.grab_focus.call_deferred()
 
 	if Input.is_action_just_pressed("tts_z"):
 		$HSliderRate.grab_focus.call_deferred()
@@ -187,7 +191,7 @@ func _unhandled_input(_event):
 	if Input.is_action_just_pressed("tts_u"):
 		$RichTextLabel.set_focus_mode(Control.FOCUS_ALL)
 		$RichTextLabel.grab_focus.call_deferred()
-
+		
 	if Input.is_action_pressed("tts_shift"):
 		$HSliderRate.step = 0.5
 		$HSliderPitch.step = 0.5
@@ -365,7 +369,6 @@ func _process(_delta):
 					$Utterance.grab_focus.call_deferred()
 				last_copy = DisplayServer.clipboard_get()
 
-
 	if DisplayServer.tts_is_speaking():
 		$Label.text = "Speaking..."
 		$ButtonToggle.text = "Space: Pause"
@@ -476,7 +479,13 @@ func _on_button_int_speak_pressed():
 func _on_button_clear_log_pressed():
 	save_files()
 	save_count += 1
-	$Log.text = "\nfiles saved #%s\n" % [save_count]
+	if OS.has_feature("web"):
+		$Log.text = "\nEnglish voice available\n"
+	elif voices.size() == 1:
+		$Log.text = "\n%d voice available\n" % [voices.size()]
+	elif voices.size() > 1:
+		$Log.text = "\n%d voices available\n" % [voices.size()]
+	$Log.text += "=======================\nfiles saved #%s\n" % [save_count]
 
 func _on_h_slider_rate_value_changed(value):
 	$HSliderRate/Value.text = "%.2fx" % [value]
@@ -577,10 +586,12 @@ func _on_button_folder_pressed():
 
 func _notification(what):
 	match what:
-		MainLoop.NOTIFICATION_APPLICATION_FOCUS_IN:
+		NOTIFICATION_APPLICATION_FOCUS_IN:
 			window_active = true
-		MainLoop.NOTIFICATION_APPLICATION_FOCUS_OUT:
+		NOTIFICATION_APPLICATION_FOCUS_OUT:
 			window_active = false
+		NOTIFICATION_WM_CLOSE_REQUEST:
+			$Log/ButtonClearLog.emit_signal("pressed")
 
 func _on_button_toggle_mouse_entered(): # has to default to false incase user lost focus during load
 	window_active = true
