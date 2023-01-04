@@ -296,34 +296,34 @@ func format_suffix():
 				total_lines = INT_MAX
 
 	if total_chars >= 1000000000000000000:
-		format_chars = chars_copied + "[rainbow freq=0.2 sat=10 val=20](" + str(total_chars / 1000000000000000000) + " Quin)[/rainbow]"
+		format_chars = chars_copied + "[rainbow freq=0.2 sat=10 val=20](%s Quin)[/rainbow]" % [total_chars / 1000000000000000000]
 	elif total_chars >= 1000000000000000:
-		format_chars = chars_copied + "[color=CORAL](" + str(total_chars / 1000000000000000) + "Q)[/color]"
+		format_chars = chars_copied + "[color=CORAL](%sQ)[/color]" % [total_chars / 1000000000000000]
 	elif total_chars >= 1000000000000:
-		format_chars = chars_copied + "[color=CYAN](" + str(total_chars / 1000000000000) + "T)[/color]"
+		format_chars = chars_copied + "[color=CYAN](%sT)[/color]" % [total_chars / 1000000000000]
 	elif total_chars >= 1000000000:
-		format_chars = chars_copied + "[color=INDIAN_RED](" + str(total_chars / 1000000000) + "B)[/color]"
+		format_chars = chars_copied + "[color=INDIAN_RED](%sB)[/color]" % [total_chars / 1000000000]
 	elif total_chars >= 10000000:
-		format_chars = chars_copied + "[color=GREEN](" + str(total_chars / 1000000) + "M)[/color]"
+		format_chars = chars_copied + "[color=GREEN](%sM)[/color]" % [total_chars / 1000000]
 	elif total_chars >= 100000:
-		format_chars = chars_copied + "[color=YELLOW](" + str(total_chars / 1000) + "K)[/color]"
+		format_chars = chars_copied + "[color=YELLOW](%sK)[/color]" % [total_chars / 1000]
 	else:
-		format_chars = chars_copied + "[color=WHITE](" + str(total_chars) + ")[/color]"
+		format_chars = chars_copied + "[color=WHITE](%s)[/color]" % [total_chars]
 
 	if total_lines >= 1000000000000000000:
-		format_lines = lines_copied + "[rainbow freq=0.2 sat=10 val=20](" + str(total_lines / 1000000000000000000) + " Quin)[/rainbow]"
+		format_lines = lines_copied + "[rainbow freq=0.2 sat=10 val=20](%s Quin)[/rainbow]" % [total_lines / 1000000000000000000]
 	elif total_lines >= 1000000000000000:
-		format_lines = lines_copied + "[color=CORAL](" + str(total_lines / 1000000000000000) + "Q)[/color]"
+		format_lines = lines_copied + "[color=CORAL](%sQ)[/color]" % [total_lines / 1000000000000000]
 	elif total_lines >= 1000000000000:
-		format_lines = lines_copied + "[color=CYAN](" + str(total_lines / 1000000000000) + "T)[/color]"
+		format_lines = lines_copied + "[color=CYAN](%sT)[/color]" % [total_lines / 1000000000000]
 	elif total_lines >= 1000000000:
-		format_lines = lines_copied + "[color=INDIAN_RED](" + str(total_lines / 1000000000) + "B)[/color]"
+		format_lines = lines_copied + "[color=INDIAN_RED](%sB)[/color]" % [total_lines / 1000000000]
 	elif total_lines >= 10000000:
-		format_lines = lines_copied + "[color=GREEN](" + str(total_lines / 1000000) + "M)[/color]"
+		format_lines = lines_copied + "[color=GREEN](%sM)[/color]" % [total_lines / 1000000]
 	elif total_lines >= 100000:
-		format_lines = lines_copied + "[color=YELLOW](" + str(total_lines / 1000) + "K)[/color]"
+		format_lines = lines_copied + "[color=YELLOW](%sK)[/color]" % [total_lines / 1000]
 	else:
-		format_lines = lines_copied + "[color=WHITE](" + str(total_lines) + ")[/color]"
+		format_lines = lines_copied + "[color=WHITE](%s)[/color]" % [total_lines]
 
 	if current_mode == MODES.MANUAL:
 		$CharsLabel.text = "[center]" + str($RichTextLabel.get_total_character_count()) + format_chars + "[/center]"
