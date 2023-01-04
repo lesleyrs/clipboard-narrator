@@ -96,6 +96,7 @@ func _ready():
 		$ButtonOnTop.emit_signal("pressed")
 	if $ButtonFullscreen.button_pressed:
 		$ButtonFullscreen.emit_signal("pressed")
+	notification(NOTIFICATION_WM_WINDOW_FOCUS_IN)
 
 	match current_mode:
 		0:
@@ -153,8 +154,6 @@ func _unhandled_input(_event):
 		DisplayServer.window_set_title("Clipboard Narrator - %s" % mode_name)
 
 	if Input.is_action_just_pressed("tts_space"):
-		if window_active == false:
-			window_active = true # has to default to false incase user lost focus during load
 		$ButtonToggle.emit_signal("pressed")
 
 	if Input.is_action_just_pressed("tts_escape"):
@@ -586,12 +585,9 @@ func _on_button_folder_pressed():
 
 func _notification(what):
 	match what:
-		NOTIFICATION_APPLICATION_FOCUS_IN:
+		NOTIFICATION_WM_WINDOW_FOCUS_IN:
 			window_active = true
-		NOTIFICATION_APPLICATION_FOCUS_OUT:
+		NOTIFICATION_WM_WINDOW_FOCUS_OUT:
 			window_active = false
 		NOTIFICATION_WM_CLOSE_REQUEST:
 			$Log/ButtonClearLog.emit_signal("pressed")
-
-func _on_button_toggle_mouse_entered(): # has to default to false incase user lost focus during load
-	window_active = true

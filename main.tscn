@@ -313,7 +313,6 @@ scroll_active = false
 [connection signal="pressed" from="ButtonFolder" to="." method="_on_button_folder_pressed"]
 [connection signal="pressed" from="ButtonIntSpeak" to="." method="_on_button_int_speak_pressed"]
 [connection signal="pressed" from="ButtonStop" to="." method="_on_button_stop_pressed"]
-[connection signal="mouse_entered" from="ButtonToggle" to="." method="_on_button_toggle_mouse_entered"]
 [connection signal="pressed" from="ButtonToggle" to="." method="_on_button_toggle_pressed"]
 [connection signal="item_selected" from="OptionButton" to="." method="_on_option_button_item_selected"]
 [connection signal="value_changed" from="HSliderRate" to="." method="_on_h_slider_rate_value_changed"]
