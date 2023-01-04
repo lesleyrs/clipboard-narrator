@@ -16,7 +16,7 @@ Current problems are commented in [`main.gd`](main.gd#L15), but it's completely 
 Inside the application press `h` to get a tts explanation. Copying the same text back to back does not work, press `r` for that. The `i` key can also be used for entering text. Background colour picker is the button on the top left corner.
 
 # interrupt, queue, and manual modes
-This application works differently based on which mode you are in (changed by pressing tab or shift-tab)
+This application works differently based on which mode you are in (changed by pressing tab or shift-tab). Exception to this is that recent clipboards over 1 word long[^1] are saved in `1` to `0` number keys allowing you to interrupt current speech with past clipboards regardless of mode.
 
 - **interrupt**
 
