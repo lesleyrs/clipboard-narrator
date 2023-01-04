@@ -19,6 +19,8 @@ var file_path: String = "user://file.txt"
 var save_count: int = 0
 var key_array: Array[int] = [KEY_1, KEY_2, KEY_3, KEY_4, KEY_5, KEY_6, KEY_7, KEY_8, KEY_9, KEY_0]
 
+# TODO: consider json saving if it allows incomplete save loading, add logo/icon, add releases
+
 # The following issues should be upstream only:
 # web build cuts off + doesn't resume properly + focus notification not available + following highlight rarely works.
 # allow changing slider while speaking, stop richtext moving scrollbar or make it follow without stopping
