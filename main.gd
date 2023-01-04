@@ -20,7 +20,8 @@ var save_count: int = 0
 var key_array: Array[int] = [KEY_1, KEY_2, KEY_3, KEY_4, KEY_5, KEY_6, KEY_7, KEY_8, KEY_9, KEY_0]
 
 # TODO
-# add logo/icon, add releases, try linux primary clipboard? allow changing slider while speaking
+# add logo/icon, add releases, try linux primary clipboard? save clipboards or not?
+# allow changing slider while speaking
 
 # stop richtext moving scrollbar or make it follow without stopping, disable scroll and use scroll to line?
 # web build cuts off + doesn't resume properly + focus notification not available + following highlight rarely works.
