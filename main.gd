@@ -19,22 +19,16 @@ var file_path: String = "user://file.txt"
 var save_count: int = 0
 var key_array: Array[int] = [KEY_1, KEY_2, KEY_3, KEY_4, KEY_5, KEY_6, KEY_7, KEY_8, KEY_9, KEY_0]
 
-# TODO
-# add logo/icon, add releases, try linux primary clipboard? save clipboards or not?
-# allow changing slider while speaking
-
-# stop richtext moving scrollbar or make it follow without stopping, disable scroll and use scroll to line?
+# The following issues should be upstream only:
 # web build cuts off + doesn't resume properly + focus notification not available + following highlight rarely works.
+# allow changing slider while speaking, stop richtext moving scrollbar or make it follow without stopping
+# https://github.com/godotengine/buildroot/issues/7 try linux primary clipboard
 # https://github.com/godotengine/godot-docs/issues/5121 shadowed variables not ignored beta 10
 # https://github.com/godotengine/godot/issues/70791 optionbutton text low resolution
 # https://github.com/godotengine/godot-demo-projects/pull/744 can't find non-english voices on windows at least
 # https://github.com/godotengine/godot/issues/39144 interrupt voice breaks the yellow highlight + can't scroll at all?
 # https://github.com/godotengine/godot/issues/3985 no smart word wrap mode for textedit
 # https://github.com/godotengine/godot/issues/56399 font oversampling bug canvas mode (works curr layout)
-
-# Note: On Windows and Linux (X11), utterance text can use SSML markup.
-# SSML support is engine and voice dependent. If the engine does not support SSML,
-# you should strip out all XML markup before calling tts_speak().
 
 func _ready():
 	$OptionButton.add_item("P: 854x480")
