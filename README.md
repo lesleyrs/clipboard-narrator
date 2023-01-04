@@ -9,7 +9,7 @@ I made this for myself to save me from doing more reading than needed, but I thi
 
 ![clipboard-narrator](https://user-images.githubusercontent.com/19632758/209919039-a4bc489e-7da1-4272-81be-cf920e1781db.png)
 
-On desktop it'll be able to read from your clipboard in the background. No internet connection needed. Smart stopping voice added by copying 1 word[^1], this allows you to start and stop a voice without requiring window focus.
+On desktop it'll be able to read from your clipboard in the background. No internet connection needed. Smart stopping voice added by copying 1 word[^1], this allows you to start and stop a voice without requiring window focus. Auto-saves textedit to .txt file and settings to .dat file on closing.
 
 Current problems are commented in [`main.gd`](main.gd#L15), but it's completely functional.
 
