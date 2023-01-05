@@ -11,7 +11,7 @@ I made this for myself to save me from doing more reading than needed, but I thi
 
 On desktop it'll be able to read from your clipboard in the background. No internet connection needed. Smart stopping voice added by copying 1 word[^1], this allows you to start and stop a voice without requiring window focus. Auto-saves textedit to .txt file and settings to .dat file on closing, this means you should close the application before deleting the saves to reset settings.
 
-Current problems are commented in [`main.gd`](main.gd#L15), but it's completely functional.
+Current problems are commented in [`main.gd`](main.gd#L22), but it's completely functional.
 
 Inside the application press `h` to get a tts explanation. Copying the same text back to back does not work, press `r` for that. The `i` key can also be used for entering text. Background colour picker is the button on the top left corner.
 
