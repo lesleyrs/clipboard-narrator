@@ -4,8 +4,7 @@ var id: int = 0
 var ut_map: Dictionary = {}
 var voices: Array
 enum MODES { INTERRUPT, QUEUE, MANUAL }
-var current_mode: int = MODES.INTERRUPT
-var mode_name: String
+var current_mode: MODES = MODES.INTERRUPT
 var stylebox_flat: StyleBoxFlat = StyleBoxFlat.new()
 var window_focus: bool = false
 var last_copy: Array[String] = [DisplayServer.clipboard_get(), "empty", "empty", "empty", "empty", "empty", "empty", "empty", "empty", "empty"]
@@ -96,14 +95,7 @@ func _ready():
 		$ButtonFullscreen.emit_signal("pressed")
 	notification(NOTIFICATION_WM_WINDOW_FOCUS_IN)
 
-	match current_mode:
-		0:
-			mode_name = "INTERRUPT MODE"
-		1:
-			mode_name = "QUEUE MODE"
-		2:
-			mode_name = "MANUAL MODE"
-
+	var mode_name: String = MODES.keys()[current_mode] + " MODE"
 	DisplayServer.window_set_title("Clipboard Narrator - %s" % mode_name)
 		
 func _unhandled_input(event):
@@ -140,21 +132,16 @@ func _unhandled_input(event):
 			match current_mode:
 				0:
 					current_mode = MODES.MANUAL
-					mode_name = "MANUAL MODE"
-					ut_map[id] = "MANUAL MODE"
-					DisplayServer.tts_speak("MANUAL MODE", voice[0], $HSliderVolume.value, $HSliderPitch.value, $HSliderRate.value, id, true)
 				1:
 					current_mode = MODES.INTERRUPT
-					mode_name = "INTERRUPT MODE"
-					ut_map[id] = "INTERRUPT MODE"
-					DisplayServer.tts_speak("INTERRUPT MODE", voice[0], $HSliderVolume.value, $HSliderPitch.value, $HSliderRate.value, id, true)
 				2:
 					current_mode = MODES.QUEUE
-					mode_name = "QUEUE MODE"
-					ut_map[id] = "QUEUE MODE"
-					DisplayServer.tts_speak("QUEUE MODE", voice[0], $HSliderVolume.value, $HSliderPitch.value, $HSliderRate.value, id, true)
-		id += 1
-		DisplayServer.window_set_title("Clipboard Narrator - %s" % mode_name)
+					
+			var mode_name: String = MODES.keys()[current_mode] + " MODE"
+			ut_map[id] = mode_name
+			DisplayServer.tts_speak(mode_name, voice[0], $HSliderVolume.value, $HSliderPitch.value, $HSliderRate.value, id, true)
+			id += 1
+			DisplayServer.window_set_title("Clipboard Narrator - %s" % mode_name)
 
 	elif Input.is_action_just_pressed("tts_tab") and !$Utterance.has_focus():
 		var voice: Array = DisplayServer.tts_get_voices_for_language("en")
@@ -162,21 +149,16 @@ func _unhandled_input(event):
 			match current_mode:
 				0:
 					current_mode = MODES.QUEUE
-					mode_name = "QUEUE MODE"
-					ut_map[id] = "QUEUE MODE"
-					DisplayServer.tts_speak("QUEUE MODE", voice[0], $HSliderVolume.value, $HSliderPitch.value, $HSliderRate.value, id, true)
 				1:
 					current_mode = MODES.MANUAL
-					mode_name = "MANUAL MODE"
-					ut_map[id] = "MANUAL MODE"
-					DisplayServer.tts_speak("MANUAL MODE", voice[0], $HSliderVolume.value, $HSliderPitch.value, $HSliderRate.value, id, true)
 				2:
 					current_mode = MODES.INTERRUPT
-					mode_name = "INTERRUPT MODE"
-					ut_map[id] = "INTERRUPT MODE"
-					DisplayServer.tts_speak("INTERRUPT MODE", voice[0], $HSliderVolume.value, $HSliderPitch.value, $HSliderRate.value, id, true)
-		id += 1
-		DisplayServer.window_set_title("Clipboard Narrator - %s" % mode_name)
+					
+			var mode_name: String = MODES.keys()[current_mode] + " MODE"
+			ut_map[id] = mode_name
+			DisplayServer.tts_speak(mode_name, voice[0], $HSliderVolume.value, $HSliderPitch.value, $HSliderRate.value, id, true)
+			id += 1
+			DisplayServer.window_set_title("Clipboard Narrator - %s" % mode_name)
 
 	if Input.is_action_just_pressed("tts_space"):
 		$ButtonToggle.emit_signal("pressed")
