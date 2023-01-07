@@ -18,9 +18,8 @@ var file_path: String = "user://file.txt"
 var save_count: int = 0
 var key_array: Array[int] = [KEY_1, KEY_2, KEY_3, KEY_4, KEY_5, KEY_6, KEY_7, KEY_8, KEY_9, KEY_0]
 
-# TODO: consider json saving if it allows incomplete save loading, add logo/icon, add releases
-
 # The following issues should be upstream only:
+# can't read clipboard error causes voice to sometimes read clipboard when opening folders on windows 10
 # web build cuts off + doesn't resume properly + focus notification not available + following highlight rarely works.
 # allow changing slider while speaking, stop richtext moving scrollbar or make it follow without stopping
 # https://github.com/godotengine/buildroot/issues/7 try linux primary clipboard
@@ -270,7 +269,9 @@ func load_files():
 				$OptionButton.selected = save.get_var()
 				$ButtonOnTop.button_pressed = save.get_var()
 				$ButtonFullscreen.button_pressed = save.get_var()
-
+#			if save.get_position() < save.get_length():
+# unsure about a better way to check missing vars, ideally just load default values if missing
+				
 	if FileAccess.file_exists(file_path):
 		if FileAccess.get_open_error() == OK:
 			var file = FileAccess.open(file_path, FileAccess.READ)
