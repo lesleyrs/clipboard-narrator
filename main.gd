@@ -269,7 +269,7 @@ func load_files():
 				$OptionButton.selected = save.get_var()
 				$ButtonOnTop.button_pressed = save.get_var()
 				$ButtonFullscreen.button_pressed = save.get_var()
-#			if save.get_position() < save.get_length():
+#				if save.get_position() < save.get_length():
 # unsure about a better way to check missing vars, ideally just load default values if missing
 				
 	if FileAccess.file_exists(file_path):
