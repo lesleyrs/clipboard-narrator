@@ -8,7 +8,7 @@ var current_mode: MODES = MODES.INTERRUPT
 var stylebox_flat: StyleBoxFlat = StyleBoxFlat.new()
 var window_focus: bool = false
 var last_copy: Array[String] = [DisplayServer.clipboard_get(), "empty", "empty", "empty", "empty", "empty", "empty", "empty", "empty", "empty"]
-var last_count: int = 0
+var last_lines: int = 0
 var last_chars: int = 0
 var total_lines: int = 0
 var total_chars: int = 0
@@ -347,8 +347,8 @@ func format_suffix():
 			$LinesLabel.text = "[center]" + str(DisplayServer.clipboard_get().count("\n")) + format_lines + "[/center]"
 
 func _process(_delta):
-	if $RichTextLabel.get_line_count() != last_count:
-		last_count = $RichTextLabel.get_line_count()
+	if $RichTextLabel.get_line_count() != last_lines:
+		last_lines = $RichTextLabel.get_line_count()
 		resize_label()
 
 	if $RichTextLabel.get_total_character_count() != last_chars:
