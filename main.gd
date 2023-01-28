@@ -283,7 +283,7 @@ func resize_label():
 		$RichTextLabel.size.y = 616
 		$RichTextLabel.scroll_active = true
 
-@warning_ignore(integer_division)
+@warning_ignore("integer_division")
 func format_suffix():
 	var format_chars: String
 	var format_lines: String
@@ -395,22 +395,22 @@ func _process(_delta):
 		$Label.text = "Waiting for input..."
 		$ButtonToggle.text = "Space: Speak"
 
-@warning_ignore(shadowed_variable)
+@warning_ignore("shadowed_variable")
 func _on_utterance_boundary(pos, id):
 	$RichTextLabel.text = "[bgcolor=yellow][color=black]" + ut_map[id].substr(0, pos) + "[/color][/bgcolor]" + ut_map[id].substr(pos, -1)
 
-@warning_ignore(shadowed_variable)
+@warning_ignore("shadowed_variable")
 func _on_utterance_start(id):
 	$Log.text += "utterance %d started\n" % [id]
 
-@warning_ignore(shadowed_variable)
+@warning_ignore("shadowed_variable")
 func _on_utterance_end(id):
 	$RichTextLabel.text = "[bgcolor=yellow][color=black]" + ut_map[id] + "[/color][/bgcolor]"
 	$Log.text += "utterance %d ended\n" % [id]
 	ut_map.erase(id)
 	DisplayServer.tts_resume()
 
-@warning_ignore(shadowed_variable)
+@warning_ignore("shadowed_variable")
 func _on_utterance_error(id):
 	$Log.text += "utterance %d canceled\n" % [id]
 	ut_map.erase(id)
