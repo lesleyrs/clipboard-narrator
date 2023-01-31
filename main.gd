@@ -19,6 +19,7 @@ var save_count: int = 0
 var key_array: Array[int] = [KEY_1, KEY_2, KEY_3, KEY_4, KEY_5, KEY_6, KEY_7, KEY_8, KEY_9, KEY_0]
 
 # The following issues should be upstream only:
+# godot beta 16 (or maybe previous) added new bug where window position changes during loading
 # can't read clipboard error causes voice to sometimes read clipboard when opening folders on windows 10
 # web build cuts off + doesn't resume properly + focus notification not available + following highlight rarely works.
 # allow changing slider while speaking, stop richtext moving scrollbar or make it follow without stopping
@@ -111,7 +112,7 @@ func _unhandled_input(event):
 				id += 1
 			else:
 				if DisplayServer.window_get_flag(DisplayServer.WINDOW_FLAG_ALWAYS_ON_TOP):
-						$ButtonOnTop.emit_signal("pressed")
+					$ButtonOnTop.emit_signal("pressed")
 				OS.alert("Select voice.")
 
 		if OS.has_feature("web"):
@@ -479,7 +480,7 @@ func _on_button_int_speak_pressed():
 			id += 1
 		else:
 			if DisplayServer.window_get_flag(DisplayServer.WINDOW_FLAG_ALWAYS_ON_TOP):
-					$ButtonOnTop.emit_signal("pressed")
+				$ButtonOnTop.emit_signal("pressed")
 			OS.alert("Select voice.")
 
 	if OS.has_feature("web"):
