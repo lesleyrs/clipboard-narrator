@@ -1,9 +1,10 @@
 extends Control
 
+enum MODES { INTERRUPT, QUEUE, MANUAL }
+const INT_MAX: int = 9223372036854775807
 var id: int = 0
 var ut_map: Dictionary = {}
 var voices: Array
-enum MODES { INTERRUPT, QUEUE, MANUAL }
 var current_mode: MODES = MODES.INTERRUPT
 var stylebox_flat: StyleBoxFlat = StyleBoxFlat.new()
 var window_focus: bool = false
@@ -12,7 +13,6 @@ var last_lines: int = 0
 var last_chars: int = 0
 var total_lines: int = 0
 var total_chars: int = 0
-const INT_MAX: int = 9223372036854775807
 var save_path: String = "user://save.dat"
 var file_path: String = "user://file.txt"
 var save_count: int = 0
