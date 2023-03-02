@@ -23,7 +23,7 @@ var key_array: Array[int] = [KEY_1, KEY_2, KEY_3, KEY_4, KEY_5, KEY_6, KEY_7, KE
 
 # The following issues should be upstream:
 # web build cuts off + doesn't resume + focus notification not available + following highlight rarely works
-# godot beta 16 (or maybe previous) added new bug where window position changes during loading, also a delay after splashscreen disappears
+# editor only: godot beta 16 (or earlier) added new bug where window position changes during loading, also a delay after splashscreen disappears
 # stop richtext moving scrollbar or make it follow the highlight (if the highlight doesn't break)
 # https://github.com/godotengine/godot/issues/70791 optionbutton text low resolution
 # https://github.com/godotengine/godot/issues/39144 interrupting voice breaks the yellow highlighting
