@@ -18,18 +18,18 @@ var file_path: String = "user://file.txt"
 var save_count: int = 0
 var key_array: Array[int] = [KEY_1, KEY_2, KEY_3, KEY_4, KEY_5, KEY_6, KEY_7, KEY_8, KEY_9, KEY_0]
 
-# The following issues should be upstream only:
-# godot beta 16 (or maybe previous) added new bug where window position changes during loading
-# can't read clipboard error causes voice to sometimes read clipboard when opening folders on windows 10
-# web build cuts off + doesn't resume properly + focus notification not available + following highlight rarely works.
-# allow changing slider while speaking, stop richtext moving scrollbar or make it follow without stopping
-# https://github.com/godotengine/buildroot/issues/7 try linux primary clipboard
-# https://github.com/godotengine/godot-docs/issues/5121 shadowed variables not ignored beta 10
+# Linux primary clipboard could be used for convenience
+# Should json be used for parsing save file instead? Currently crashes if variable is missing, ideally load default values
+# Can't read clipboard error causes voice to sometimes read clipboard when opening folders on windows 10, is it an OS limitation?
+
+# The following issues should be upstream:
+# web build cuts off + doesn't resume + focus notification not available + following highlight rarely works
+# godot beta 16 (or maybe previous) added new bug where window position changes during loading, also a delay after splashscreen disappears
+# stop richtext moving scrollbar or make it follow the highlight (if the highlight doesn't break)
 # https://github.com/godotengine/godot/issues/70791 optionbutton text low resolution
-# https://github.com/godotengine/godot-demo-projects/pull/744 can't find non-english voices on windows at least
-# https://github.com/godotengine/godot/issues/39144 interrupt voice breaks the yellow highlight + can't scroll at all?
+# https://github.com/godotengine/godot/issues/39144 interrupting voice breaks the yellow highlighting
 # https://github.com/godotengine/godot/issues/3985 no smart word wrap mode for textedit
-# https://github.com/godotengine/godot/issues/56399 font oversampling bug canvas mode (works curr layout)
+# https://github.com/godotengine/godot/issues/56399 font oversampling bug canvas mode (works current layout)
 
 func _ready():
 	$OptionButton.add_item("P: 854x480")
@@ -47,7 +47,7 @@ func _ready():
 	format_suffix()
 
 	if OS.has_feature("web"):
-		$ButtonFolder.queue_free() # see if this one works on web export
+		$ButtonFolder.queue_free()
 		$ButtonFullscreen.queue_free()
 		$ButtonOnTop.queue_free()
 		$OptionButton.queue_free()
@@ -65,7 +65,8 @@ func _ready():
 	$Tree.set_column_title(1, "Language")
 	$Tree.set_column_titles_visible(true)
 	var child: TreeItem = $Tree.create_item(root)
-	child.select(0)
+	if OS.has_feature("windows"):
+		child.select(0)
 	for v in voices:
 		child.set_text(0, v["name"])
 		child.set_metadata(0, v["id"])
@@ -271,7 +272,6 @@ func load_files():
 				$ButtonOnTop.button_pressed = save.get_var()
 				$ButtonFullscreen.button_pressed = save.get_var()
 #				if save.get_position() < save.get_length():
-# unsure about a better way to check missing vars, ideally just load default values if missing
 				
 	if FileAccess.file_exists(file_path):
 		if FileAccess.get_open_error() == OK:
@@ -533,7 +533,8 @@ func _on_line_edit_filter_name_text_changed(_new_text):
 			child.set_text(0, v["name"])
 			child.set_metadata(0, v["id"])
 			child.set_text(1, v["language"])
-			child.select(0)
+			if OS.has_feature("windows"):
+				child.select(0)
 
 func _on_log_text_set():
 	$Log.scroll_vertical = $Log.text.length()
