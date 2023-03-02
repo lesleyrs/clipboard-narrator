@@ -1,7 +1,7 @@
 # Clipboard Narrator
 Turn any web page into an audiobook, works in the background on desktop!
 
-***Only tested to work on Windows, Linux seems to be very slow at loading the voice?***
+***Bugs are commented in [`main.gd`](main.gd#L20), otherwise feel free to report any issues!***
 
 Based on: https://github.com/godotengine/godot-demo-projects/pull/744
 
@@ -9,9 +9,7 @@ I made this for myself to save me from doing more reading than needed, but I thi
 
 ![clipboard-narrator](https://user-images.githubusercontent.com/19632758/210650475-b0b2d8f7-2791-43cc-88cf-d7060cb74884.png)
 
-On desktop it'll be able to read from your clipboard in the background. No internet connection needed. Smart stopping voice added by copying 1 word[^1], this allows you to start and stop a voice without requiring window focus. It auto-saves the text field to a .txt file and settings to .dat file on closing, this means you should close the application before deleting the saves to reset settings. You could also use the text field to take notes.
-
-Current problems are commented in [`main.gd`](main.gd#L20), but it's completely functional.
+This tool reads from your clipboard after copying text, with the ability to stop a voice by copying 1 word[^1]. This allows you to start and stop a voice without requiring window focus. It auto-saves the text field to a .txt file and settings to .dat file on closing, this means you should close the application before deleting the saves to reset settings. You could also use the text field to take notes.
 
 Inside the application press `h` to get a tts explanation. Copying the same text back to back does not work, press `r` for that. The `i` key can also be used for entering text. Background colour picker is the button on the top left corner.
 
