@@ -20,6 +20,7 @@ var key_array: Array[int] = [KEY_1, KEY_2, KEY_3, KEY_4, KEY_5, KEY_6, KEY_7, KE
 
 # Linux primary clipboard could be used for convenience
 # Should json be used for parsing save file instead? Currently crashes if variable is missing, ideally load default values
+# Can't seem to avoid "Unable to open clipboard." error and voice starting when going through directories on Windows, not sure why.
 
 # The following issues should be upstream:
 # web build cuts off + doesn't resume + focus notification not available + following highlight rarely works
@@ -355,7 +356,7 @@ func _process(_delta):
 		last_chars = $RichTextLabel.get_total_character_count()
 		format_suffix()
 
-	if DisplayServer.clipboard_get() != last_copy[0] and DisplayServer.clipboard_has():
+	if DisplayServer.clipboard_has() and DisplayServer.clipboard_get() != last_copy[0]:
 		match current_mode:
 			0:
 				if DisplayServer.clipboard_get().count(" ") > 1 or $Utterance.has_focus():
