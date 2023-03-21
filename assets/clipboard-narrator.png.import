@@ -3,22 +3,22 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://ccdpubqx44pc1"
-path="res://.godot/imported/clipboard-narrator.png-794974fd3ce66f8d8b0b1dc3e0a71a16.ctex"
+path="res://.godot/imported/clipboard-narrator.png-5d67462a77be1fe645ebd5b3899d0d16.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://clipboard-narrator.png"
-dest_files=["res://.godot/imported/clipboard-narrator.png-794974fd3ce66f8d8b0b1dc3e0a71a16.ctex"]
+source_file="res://assets/clipboard-narrator.png"
+dest_files=["res://.godot/imported/clipboard-narrator.png-5d67462a77be1fe645ebd5b3899d0d16.ctex"]
 
 [params]
 
 compress/mode=0
+compress/high_quality=false
 compress/lossy_quality=0.7
 compress/hdr_compression=1
-compress/bptc_ldr=0
 compress/normal_map=0
 compress/channel_pack=0
 mipmaps/generate=false

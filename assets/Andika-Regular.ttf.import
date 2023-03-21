@@ -3,12 +3,12 @@
 importer="font_data_dynamic"
 type="FontFile"
 uid="uid://dsmt714o0fv6k"
-path="res://.godot/imported/Andika-Regular.ttf-cf3ac6b2f81fc43f674f74850408cab3.fontdata"
+path="res://.godot/imported/Andika-Regular.ttf-2204efa2ea010f6c3f9f360a3599b2db.fontdata"
 
 [deps]
 
-source_file="res://Andika-Regular.ttf"
-dest_files=["res://.godot/imported/Andika-Regular.ttf-cf3ac6b2f81fc43f674f74850408cab3.fontdata"]
+source_file="res://assets/Andika-Regular.ttf"
+dest_files=["res://.godot/imported/Andika-Regular.ttf-2204efa2ea010f6c3f9f360a3599b2db.fontdata"]
 
 [params]
 
