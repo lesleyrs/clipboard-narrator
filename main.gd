@@ -350,7 +350,7 @@ func format_suffix():
 
 func filter_nl():
 	var string: PackedStringArray = last_copy.replace("\r", "").split("\n\n")
-	var text = ""
+	var text: String = ""
 	for s in string:
 		if s != string[string.size() - 1]:
 			text += s.replace("\n", " ") + "\n"
