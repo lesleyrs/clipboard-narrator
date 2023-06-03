@@ -8,7 +8,8 @@ var voices: Array
 var current_mode: MODES = MODES.INTERRUPT
 var stylebox_flat: StyleBoxFlat = StyleBoxFlat.new()
 var window_focus: bool = false
-var last_copy: Array[String] = [DisplayServer.clipboard_get(), "empty", "empty", "empty", "empty", "empty", "empty", "empty", "empty", "empty"]
+var last_copy: String = DisplayServer.clipboard_get()
+var history: Array[String] = [DisplayServer.clipboard_get(), "empty", "empty", "empty", "empty", "empty", "empty", "empty", "empty", "empty"]
 var last_lines: int = 0
 var last_chars: int = 0
 var total_lines: int = 0
@@ -106,11 +107,11 @@ func _unhandled_input(event):
 			if $Tree.get_selected():
 				$Log.text += "utterance %d interrupt\n" % [id]
 				if event.keycode == KEY_0:
-					DisplayServer.tts_speak(last_copy[9], $Tree.get_selected().get_metadata(0), $HSliderVolume.value, $HSliderPitch.value, $HSliderRate.value, id, true)
-					ut_map[id] = last_copy[9]
+					DisplayServer.tts_speak(history[9], $Tree.get_selected().get_metadata(0), $HSliderVolume.value, $HSliderPitch.value, $HSliderRate.value, id, true)
+					ut_map[id] = history[9]
 				else:
-					DisplayServer.tts_speak(last_copy[int(OS.get_keycode_string(event.keycode)) - 1], $Tree.get_selected().get_metadata(0), $HSliderVolume.value, $HSliderPitch.value, $HSliderRate.value, id, true)
-					ut_map[id] = last_copy[int(OS.get_keycode_string(event.keycode)) - 1]
+					DisplayServer.tts_speak(history[int(OS.get_keycode_string(event.keycode)) - 1], $Tree.get_selected().get_metadata(0), $HSliderVolume.value, $HSliderPitch.value, $HSliderRate.value, id, true)
+					ut_map[id] = history[int(OS.get_keycode_string(event.keycode)) - 1]
 				id += 1
 			else:
 				if DisplayServer.window_get_flag(DisplayServer.WINDOW_FLAG_ALWAYS_ON_TOP):
@@ -121,11 +122,11 @@ func _unhandled_input(event):
 			var voice: Array = DisplayServer.tts_get_voices_for_language("en")
 			if !voice.is_empty():
 				if event.keycode == KEY_0:
-					DisplayServer.tts_speak(last_copy[9], voice[0], $HSliderVolume.value, $HSliderPitch.value, $HSliderRate.value, id, true)
-					ut_map[id] = last_copy[9]
+					DisplayServer.tts_speak(history[9], voice[0], $HSliderVolume.value, $HSliderPitch.value, $HSliderRate.value, id, true)
+					ut_map[id] = history[9]
 				else:
-					DisplayServer.tts_speak(last_copy[int(OS.get_keycode_string(event.keycode)) - 1], voice[0], $HSliderVolume.value, $HSliderPitch.value, $HSliderRate.value, id, true)
-					ut_map[id] = last_copy[int(OS.get_keycode_string(event.keycode)) - 1]
+					DisplayServer.tts_speak(history[int(OS.get_keycode_string(event.keycode)) - 1], voice[0], $HSliderVolume.value, $HSliderPitch.value, $HSliderRate.value, id, true)
+					ut_map[id] = history[int(OS.get_keycode_string(event.keycode)) - 1]
 				id += 1
 		
 	if Input.is_action_just_pressed("tts_shift_tab") and !$Utterance.has_focus():
@@ -357,38 +358,39 @@ func _process(_delta):
 		last_chars = $RichTextLabel.get_total_character_count()
 		format_suffix()
 
-	if DisplayServer.clipboard_has() and DisplayServer.clipboard_get() != last_copy[0]:
+	if DisplayServer.clipboard_has() and DisplayServer.clipboard_get() != last_copy:
+		last_copy = DisplayServer.clipboard_get()
 		match current_mode:
 			0:
 				if DisplayServer.clipboard_get().count(" ") > 1 or $Utterance.has_focus():
+					history.push_front(DisplayServer.clipboard_get())
 					$ButtonIntSpeak.emit_signal("pressed")
-					last_copy.push_front(DisplayServer.clipboard_get())
 				else:
-					$ButtonStop.emit_signal("pressed")
-					if last_copy[0].count(" ") > 1 or $Utterance.has_focus():
-						last_copy.push_front(DisplayServer.clipboard_get())
+					if history[0].count(" ") > 1 or $Utterance.has_focus():
+						history.push_front(DisplayServer.clipboard_get())
 					else:
-						last_copy[0] = DisplayServer.clipboard_get()
+						history[0] = DisplayServer.clipboard_get()
+					$ButtonStop.emit_signal("pressed")
 			1:
 				if DisplayServer.clipboard_get().count(" ") > 1 or $Utterance.has_focus():
+					history.push_front(DisplayServer.clipboard_get())
 					$ButtonToggle.emit_signal("pressed")
-					last_copy.push_front(DisplayServer.clipboard_get())
 				else:
-					pause_resume()
-					if last_copy[0].count(" ") > 1 or $Utterance.has_focus():
-						last_copy.push_front(DisplayServer.clipboard_get())
+					if history[0].count(" ") > 1 or $Utterance.has_focus():
+						history.push_front(DisplayServer.clipboard_get())
 					else:
-						last_copy[0] = DisplayServer.clipboard_get()
+						history[0] = DisplayServer.clipboard_get()
+					pause_resume()
 			2:
 				if !$Utterance.has_focus():
 					$Utterance.grab_focus.call_deferred()
-				if last_copy[0].count(" ") > 1 or $Utterance.has_focus():
-					last_copy.push_front(DisplayServer.clipboard_get())
+				if history[0].count(" ") > 1 or $Utterance.has_focus():
+					history.push_front(DisplayServer.clipboard_get())
 				else:
-					last_copy[0] = DisplayServer.clipboard_get()
+					history[0] = DisplayServer.clipboard_get()
 				
-		if last_copy.size() > 10:
-			last_copy.pop_back()
+		if history.size() > 10:
+			history.pop_back()
 
 	if DisplayServer.tts_is_speaking():
 		$Label.text = "Speaking..."
@@ -441,8 +443,8 @@ func _on_button_toggle_pressed():
 				$Log.text += "utterance %d queried\n" % [id]
 				match current_mode:
 					0, 1:
-						ut_map[id] = DisplayServer.clipboard_get()
-						DisplayServer.tts_speak(DisplayServer.clipboard_get(), $Tree.get_selected().get_metadata(0), $HSliderVolume.value, $HSliderPitch.value, $HSliderRate.value, id, false)
+						ut_map[id] = history[0]
+						DisplayServer.tts_speak(history[0], $Tree.get_selected().get_metadata(0), $HSliderVolume.value, $HSliderPitch.value, $HSliderRate.value, id, false)
 					2:
 						ut_map[id] = $Utterance.text
 						DisplayServer.tts_speak($Utterance.text, $Tree.get_selected().get_metadata(0), $HSliderVolume.value, $HSliderPitch.value, $HSliderRate.value, id, false)
@@ -458,8 +460,8 @@ func _on_button_toggle_pressed():
 				$Log.text += "utterance %d queried\n" % [id]
 				match current_mode:
 					0, 1:
-						ut_map[id] = DisplayServer.clipboard_get()
-						DisplayServer.tts_speak(DisplayServer.clipboard_get(), voice[0], $HSliderVolume.value, $HSliderPitch.value, $HSliderRate.value, id, false)
+						ut_map[id] = history[0]
+						DisplayServer.tts_speak(history[0], voice[0], $HSliderVolume.value, $HSliderPitch.value, $HSliderRate.value, id, false)
 					2:
 						ut_map[id] = $Utterance.text
 						DisplayServer.tts_speak($Utterance.text, voice[0], $HSliderVolume.value, $HSliderPitch.value, $HSliderRate.value, id, false)
@@ -473,8 +475,8 @@ func _on_button_int_speak_pressed():
 			$Log.text += "utterance %d interrupt\n" % [id]
 			match current_mode:
 				0, 1:
-					ut_map[id] = DisplayServer.clipboard_get()
-					DisplayServer.tts_speak(DisplayServer.clipboard_get(), $Tree.get_selected().get_metadata(0), $HSliderVolume.value, $HSliderPitch.value, $HSliderRate.value, id, true)
+					ut_map[id] = history[0]
+					DisplayServer.tts_speak(history[0], $Tree.get_selected().get_metadata(0), $HSliderVolume.value, $HSliderPitch.value, $HSliderRate.value, id, true)
 				2:
 					ut_map[id] = $Utterance.text
 					DisplayServer.tts_speak($Utterance.text, $Tree.get_selected().get_metadata(0), $HSliderVolume.value, $HSliderPitch.value, $HSliderRate.value, id, true)
@@ -490,8 +492,8 @@ func _on_button_int_speak_pressed():
 			$Log.text += "utterance %d interrupt\n" % [id]
 			match current_mode:
 				0, 1:
-					ut_map[id] = DisplayServer.clipboard_get()
-					DisplayServer.tts_speak(DisplayServer.clipboard_get(), voice[0], $HSliderVolume.value, $HSliderPitch.value, $HSliderRate.value, id, true)
+					ut_map[id] = history[0]
+					DisplayServer.tts_speak(history[0], voice[0], $HSliderVolume.value, $HSliderPitch.value, $HSliderRate.value, id, true)
 				2:
 					ut_map[id] = $Utterance.text
 					DisplayServer.tts_speak($Utterance.text, voice[0], $HSliderVolume.value, $HSliderPitch.value, $HSliderRate.value, id, true)
