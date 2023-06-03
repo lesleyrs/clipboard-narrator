@@ -9,7 +9,7 @@ var current_mode: MODES = MODES.INTERRUPT
 var stylebox_flat: StyleBoxFlat = StyleBoxFlat.new()
 var window_focus: bool = false
 var last_copy: String = DisplayServer.clipboard_get()
-var history: Array[String] = [DisplayServer.clipboard_get(), "empty", "empty", "empty", "empty", "empty", "empty", "empty", "empty", "empty"]
+var history: Array[String] = [filter_nl(), "empty", "empty", "empty", "empty", "empty", "empty", "empty", "empty", "empty"]
 var last_lines: int = 0
 var last_chars: int = 0
 var total_lines: int = 0
@@ -26,7 +26,6 @@ var key_array: Array[int] = [KEY_1, KEY_2, KEY_3, KEY_4, KEY_5, KEY_6, KEY_7, KE
 
 # The following issues should be upstream:
 # web build cuts off + doesn't resume + focus notification not available + following highlight rarely works
-# editor only: godot beta 16 (or earlier) added new bug where window position changes during loading, also a delay after splashscreen disappears
 # stop richtext moving scrollbar or make it follow the highlight (if the highlight doesn't break)
 # https://github.com/godotengine/godot/issues/70791 optionbutton text low resolution
 # https://github.com/godotengine/godot/issues/39144 interrupting voice breaks the yellow highlighting
@@ -349,6 +348,16 @@ func format_suffix():
 		else:
 			$LinesLabel.text = "[center]" + str(DisplayServer.clipboard_get().count("\n")) + format_lines + "[/center]"
 
+func filter_nl():
+	var string: PackedStringArray = last_copy.replace("\r", "").split("\n\n")
+	var text = ""
+	for s in string:
+		if s != string[string.size() - 1]:
+			text += s.replace("\n", " ") + "\n"
+		else:
+			text += s.replace("\n", " ")
+	return text
+
 func _process(_delta):
 	if $RichTextLabel.get_line_count() != last_lines:
 		last_lines = $RichTextLabel.get_line_count()
@@ -363,31 +372,31 @@ func _process(_delta):
 		match current_mode:
 			0:
 				if DisplayServer.clipboard_get().count(" ") > 1 or $Utterance.has_focus():
-					history.push_front(DisplayServer.clipboard_get())
+					history.push_front(filter_nl())
 					$ButtonIntSpeak.emit_signal("pressed")
 				else:
 					if history[0].count(" ") > 1 or $Utterance.has_focus():
-						history.push_front(DisplayServer.clipboard_get())
+						history.push_front(filter_nl())
 					else:
-						history[0] = DisplayServer.clipboard_get()
+						history[0] = filter_nl()
 					$ButtonStop.emit_signal("pressed")
 			1:
 				if DisplayServer.clipboard_get().count(" ") > 1 or $Utterance.has_focus():
-					history.push_front(DisplayServer.clipboard_get())
+					history.push_front(filter_nl())
 					$ButtonToggle.emit_signal("pressed")
 				else:
 					if history[0].count(" ") > 1 or $Utterance.has_focus():
-						history.push_front(DisplayServer.clipboard_get())
+						history.push_front(filter_nl())
 					else:
-						history[0] = DisplayServer.clipboard_get()
+						history[0] = filter_nl()
 					pause_resume()
 			2:
 				if !$Utterance.has_focus():
 					$Utterance.grab_focus.call_deferred()
 				if history[0].count(" ") > 1 or $Utterance.has_focus():
-					history.push_front(DisplayServer.clipboard_get())
+					history.push_front(filter_nl())
 				else:
-					history[0] = DisplayServer.clipboard_get()
+					history[0] = filter_nl()
 				
 		if history.size() > 10:
 			history.pop_back()
