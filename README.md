@@ -14,7 +14,7 @@ Windows built-in narrator has a different use case but does use the system voice
 
 ![clipboard-narrator](https://user-images.githubusercontent.com/19632758/210650475-b0b2d8f7-2791-43cc-88cf-d7060cb74884.png)
 
-This tool reads from your clipboard after copying text, with the ability to stop a voice by copying 1 word[^3]. This allows you to start and stop a voice without requiring window focus. It auto-saves the text field to a .txt file and settings to .dat file on closing, this means you should close the application before deleting the saves to reset settings. You could also use the text field to take notes.
+This tool reads from your clipboard after copying text, with the ability to stop a voice by copying 1 word[^3]. This allows you to start and stop a voice without requiring window focus.
 
 Inside the application press `h` to get a tts explanation. Copying the same text back to back does not work, press `r` for that. The `i` key can also be used for entering text. Background colour picker is the button on the top left corner.
 
