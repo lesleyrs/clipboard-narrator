@@ -15,6 +15,7 @@ var last_chars: int = 0
 var total_lines: int = 0
 var total_chars: int = 0
 var save_path: String = "user://save.json"
+var save_data = JSON.parse_string(FileAccess.get_file_as_string(save_path))
 var key_array: Array[int] = [KEY_1, KEY_2, KEY_3, KEY_4, KEY_5, KEY_6, KEY_7, KEY_8, KEY_9, KEY_0]
 
 # Linux primary clipboard could be used for convenience
@@ -351,6 +352,13 @@ func filter_nl():
 	return text
 
 func _process(_delta):
+	if JSON.parse_string(FileAccess.get_file_as_string(save_path)) != save_data:
+		save_data = JSON.parse_string(FileAccess.get_file_as_string(save_path))
+		load_files()
+		$ColorPickerButton.emit_signal("color_changed", $ColorPickerButton.color)
+		$OptionButton.emit_signal("item_selected", $OptionButton.selected)
+		# TODO: allow changing fullscreen, always on top, current mode during runtime
+		
 	if $RichTextLabel.get_line_count() != last_lines:
 		last_lines = $RichTextLabel.get_line_count()
 		resize_label()
