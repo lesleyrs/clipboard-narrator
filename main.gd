@@ -249,26 +249,27 @@ func save_files():
 		save.store_string(json_data)
 
 func load_files():
-	if FileAccess.file_exists(save_path) and FileAccess.get_open_error() == OK:
+	if FileAccess.file_exists(save_path):
 		var save: FileAccess = FileAccess.open(save_path, FileAccess.READ)
-		var json_data: String = save.get_as_text()
-		var data: Dictionary = JSON.parse_string(json_data)
-		var dict: Dictionary = get_savedata()
+		if FileAccess.get_open_error() == OK:
+			var json_data: String = save.get_as_text()
+			var data: Dictionary = JSON.parse_string(json_data)
+			var dict: Dictionary = get_savedata()
 		
-		data.merge(dict)
-		
-		total_chars = data["total characters"]
-		total_lines = data["total lines"]
-		current_mode = data["current mode"]
-		$HSliderRate.value = data["tts rate"]
-		$HSliderPitch.value = data["tts pitch"]
-		$HSliderVolume.value = data["tts volume"]
-		$LineEditFilterName.text = data["filter name"]
-		$LineEditFilterLang.text = data["filter language"]
-		$ColorPickerButton.color = data["background color"]
-		$OptionButton.selected = data["resolution"]
-		$ButtonOnTop.button_pressed = data["always on top"]
-		$ButtonFullscreen.button_pressed = data["fullscreen"]
+			data.merge(dict)
+			
+			total_chars = data["total characters"]
+			total_lines = data["total lines"]
+			current_mode = data["current mode"]
+			$HSliderRate.value = data["tts rate"]
+			$HSliderPitch.value = data["tts pitch"]
+			$HSliderVolume.value = data["tts volume"]
+			$LineEditFilterName.text = data["filter name"]
+			$LineEditFilterLang.text = data["filter language"]
+			$ColorPickerButton.color = data["background color"]
+			$OptionButton.selected = data["resolution"]
+			$ButtonOnTop.button_pressed = data["always on top"]
+			$ButtonFullscreen.button_pressed = data["fullscreen"]
 		
 func resize_label():
 	$RichTextLabel.size.y = $RichTextLabel.get_line_count() * 27
@@ -595,6 +596,7 @@ func _on_option_button_item_selected(index):
 	DisplayServer.window_set_position(Vector2(DisplayServer.screen_get_position(DisplayServer.window_get_current_screen())) + DisplayServer.screen_get_size()*0.5 - DisplayServer.window_get_size()*0.5)
 
 func _on_button_settings_pressed():
+	save_files()
 	OS.shell_open(ProjectSettings.globalize_path(save_path))
 
 func _notification(what):
