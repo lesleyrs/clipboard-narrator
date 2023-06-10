@@ -11,7 +11,6 @@ grow_horizontal = 2
 grow_vertical = 2
 script = ExtResource("1_qjk75")
 metadata/_edit_lock_ = true
-metadata/_edit_group_ = true
 
 [node name="LineEditFilterName" type="LineEdit" parent="."]
 layout_mode = 1
@@ -76,14 +75,14 @@ focus_mode = 0
 toggle_mode = true
 text = "T: Always on Top"
 
-[node name="ButtonFolder" type="Button" parent="."]
+[node name="ButtonSettings" type="Button" parent="."]
 layout_mode = 1
 offset_left = 16.0
 offset_top = 72.0
 offset_right = 160.0
 offset_bottom = 107.0
 focus_mode = 0
-text = "O: Open Folder"
+text = "O: Open Settings"
 
 [node name="ButtonIntSpeak" type="Button" parent="."]
 layout_mode = 1
@@ -119,6 +118,19 @@ offset_top = 240.0
 offset_right = 160.0
 offset_bottom = 275.0
 focus_mode = 0
+
+[node name="VoicesLabel" type="RichTextLabel" parent="."]
+layout_mode = 1
+offset_left = 896.0
+offset_top = 464.0
+offset_right = 1152.0
+offset_bottom = 504.0
+theme_override_colors/font_shadow_color = Color(0, 0, 0, 1)
+theme_override_constants/shadow_outline_size = 1
+theme_override_font_sizes/normal_font_size = 24
+bbcode_enabled = true
+text = "[center]0 voices[/center]"
+scroll_active = false
 
 [node name="CharsLabel" type="RichTextLabel" parent="."]
 layout_mode = 1
@@ -262,7 +274,7 @@ layout_mode = 0
 offset_left = 912.0
 offset_top = 72.0
 offset_right = 1136.0
-offset_bottom = 516.0
+offset_bottom = 456.0
 focus_mode = 0
 editable = false
 context_menu_enabled = false
@@ -270,14 +282,6 @@ shortcut_keys_enabled = false
 virtual_keyboard_enabled = false
 middle_mouse_paste_enabled = false
 wrap_mode = 1
-
-[node name="ButtonClearLog" type="Button" parent="Log"]
-clip_contents = true
-layout_mode = 0
-offset_right = 224.0
-offset_bottom = 35.0
-focus_mode = 0
-text = "Y: Clear/Save"
 
 [node name="ColorPickerButton" type="ColorPickerButton" parent="."]
 layout_mode = 0
@@ -311,7 +315,7 @@ scroll_active = false
 [connection signal="pressed" from="ButtonDemo" to="." method="_on_button_demo_pressed"]
 [connection signal="pressed" from="ButtonFullscreen" to="." method="_on_button_fullscreen_pressed"]
 [connection signal="pressed" from="ButtonOnTop" to="." method="_on_button_on_top_pressed"]
-[connection signal="pressed" from="ButtonFolder" to="." method="_on_button_folder_pressed"]
+[connection signal="pressed" from="ButtonSettings" to="." method="_on_button_settings_pressed"]
 [connection signal="pressed" from="ButtonIntSpeak" to="." method="_on_button_int_speak_pressed"]
 [connection signal="pressed" from="ButtonStop" to="." method="_on_button_stop_pressed"]
 [connection signal="pressed" from="ButtonToggle" to="." method="_on_button_toggle_pressed"]
@@ -320,7 +324,6 @@ scroll_active = false
 [connection signal="value_changed" from="HSliderPitch" to="." method="_on_h_slider_pitch_value_changed"]
 [connection signal="value_changed" from="HSliderVolume" to="." method="_on_h_slider_volume_value_changed"]
 [connection signal="text_set" from="Log" to="." method="_on_log_text_set"]
-[connection signal="pressed" from="Log/ButtonClearLog" to="." method="_on_button_clear_log_pressed"]
 [connection signal="color_changed" from="ColorPickerButton" to="." method="_on_color_picker_button_color_changed"]
 [connection signal="focus_entered" from="RichTextLabel" to="." method="_on_rich_text_label_focus_entered"]
 [connection signal="focus_exited" from="RichTextLabel" to="." method="_on_rich_text_label_focus_exited"]

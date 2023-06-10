@@ -14,15 +14,12 @@ var last_lines: int = 0
 var last_chars: int = 0
 var total_lines: int = 0
 var total_chars: int = 0
-var save_path: String = "user://save.dat"
-var file_path: String = "user://file.txt"
-var save_count: int = 0
+var save_path: String = "user://save.json"
 var key_array: Array[int] = [KEY_1, KEY_2, KEY_3, KEY_4, KEY_5, KEY_6, KEY_7, KEY_8, KEY_9, KEY_0]
 
 # Linux primary clipboard could be used for convenience
-# Should json be used for parsing save file instead? Currently crashes if variable is missing, ideally load default values
-# Can't seem to avoid "Unable to open clipboard." error and voice starting when going through directories on Windows, not sure why.
-# Voice stops at angle brackets, doesn't happen on WinRT.
+# "Unable to open clipboard." error and voice starting when going through directories on Windows
+# Voice stops at angle brackets, doesn't happen on WinRT (separate project)
 
 # The following issues should be upstream:
 # web build cuts off + doesn't resume + focus notification not available + following highlight rarely works
@@ -48,7 +45,7 @@ func _ready():
 	format_suffix()
 
 	if OS.has_feature("web"):
-		$ButtonFolder.queue_free()
+		$ButtonSettings.queue_free()
 		$ButtonFullscreen.queue_free()
 		$ButtonOnTop.queue_free()
 		$OptionButton.queue_free()
@@ -73,14 +70,10 @@ func _ready():
 		child.set_metadata(0, v["id"])
 		child.set_text(1, v["language"])
 
-	if OS.has_feature("web"):
-		$Log.text += "\nEnglish voice available\n"
-	elif voices.size() == 1:
-		$Log.text += "\n%d voice available\n" % [voices.size()]
+	if voices.size() == 1:
+		$VoicesLabel.text = "[center]%d voice[/center]" % [voices.size()]
 	elif voices.size() > 1:
-		$Log.text += "\n%d voices available\n" % [voices.size()]
-
-	$Log.text += "=======================\n"
+		$VoicesLabel.text = "[center]%d voices[/center]" % [voices.size()]
 
 	DisplayServer.tts_set_utterance_callback(DisplayServer.TTS_UTTERANCE_STARTED, Callable(self, "_on_utterance_start"))
 	DisplayServer.tts_set_utterance_callback(DisplayServer.TTS_UTTERANCE_ENDED, Callable(self, "_on_utterance_end"))
@@ -225,60 +218,58 @@ func _unhandled_input(event):
 		$ButtonOnTop.emit_signal("pressed")
 
 	if Input.is_action_just_pressed("tts_o"):
-		$ButtonFolder.emit_signal("pressed")
+		$ButtonSettings.emit_signal("pressed")
 
 	if Input.is_action_just_pressed("tts_p"):
 		if DisplayServer.window_get_mode() != DisplayServer.WINDOW_MODE_FULLSCREEN \
 		and DisplayServer.window_get_mode() != DisplayServer.WINDOW_MODE_MAXIMIZED:
 			$OptionButton.show_popup()
 
-	if Input.is_action_just_pressed("tts_y"):
-		$Log/ButtonClearLog.emit_signal("pressed")
-
+func get_savedata():
+	var savedata: Dictionary = {
+		"total characters": total_chars,
+		"total lines": total_lines,
+		"current mode": current_mode,
+		"tts rate": $HSliderRate.value,
+		"tts pitch": $HSliderPitch.value,
+		"tts volume": $HSliderVolume.value,
+		"filter name": $LineEditFilterName.text,
+		"filter language": $LineEditFilterLang.text,
+		"background color": $ColorPickerButton.color.to_html(false),
+		"resolution": $OptionButton.selected,
+		"always on top": $ButtonOnTop.button_pressed,
+		"fullscreen": $ButtonFullscreen.button_pressed,
+	}
+	return savedata
+	
 func save_files():
-	var save = FileAccess.open(save_path, FileAccess.WRITE)
+	var json_data: String = JSON.stringify(get_savedata(), "\t")
+	var save: FileAccess = FileAccess.open(save_path, FileAccess.WRITE)
 	if FileAccess.get_open_error() == OK:
-		save.store_var(total_chars)
-		save.store_var(total_lines)
-		save.store_var(current_mode)
-		save.store_var($HSliderRate.value)
-		save.store_var($HSliderPitch.value)
-		save.store_var($HSliderVolume.value)
-		save.store_var($LineEditFilterName.text)
-		save.store_var($LineEditFilterLang.text)
-		save.store_var($ColorPickerButton.color)
-		save.store_var($OptionButton.selected)
-		save.store_var($ButtonOnTop.button_pressed)
-		save.store_var($ButtonFullscreen.button_pressed)
-
-	var file = FileAccess.open(file_path, FileAccess.WRITE)
-	if FileAccess.get_open_error() == OK:
-		file.store_string($Utterance.text)
+		save.store_string(json_data)
 
 func load_files():
-	if FileAccess.file_exists(save_path):
-		if FileAccess.get_open_error() == OK:
-			var save = FileAccess.open(save_path, FileAccess.READ)
-			if save.get_length() > 0:
-				total_chars = save.get_var()
-				total_lines = save.get_var()
-				current_mode = save.get_var()
-				$HSliderRate.value = save.get_var()
-				$HSliderPitch.value = save.get_var()
-				$HSliderVolume.value = save.get_var()
-				$LineEditFilterName.text = save.get_var()
-				$LineEditFilterLang.text = save.get_var()
-				$ColorPickerButton.color = save.get_var()
-				$OptionButton.selected = save.get_var()
-				$ButtonOnTop.button_pressed = save.get_var()
-				$ButtonFullscreen.button_pressed = save.get_var()
-#				if save.get_position() < save.get_length():
-				
-	if FileAccess.file_exists(file_path):
-		if FileAccess.get_open_error() == OK:
-			var file = FileAccess.open(file_path, FileAccess.READ)
-			$Utterance.text = file.get_as_text()
-
+	if FileAccess.file_exists(save_path) and FileAccess.get_open_error() == OK:
+		var save: FileAccess = FileAccess.open(save_path, FileAccess.READ)
+		var json_data: String = save.get_as_text()
+		var data: Dictionary = JSON.parse_string(json_data)
+		var dict: Dictionary = get_savedata()
+		
+		data.merge(dict)
+		
+		total_chars = data["total characters"]
+		total_lines = data["total lines"]
+		current_mode = data["current mode"]
+		$HSliderRate.value = data["tts rate"]
+		$HSliderPitch.value = data["tts pitch"]
+		$HSliderVolume.value = data["tts volume"]
+		$LineEditFilterName.text = data["filter name"]
+		$LineEditFilterLang.text = data["filter language"]
+		$ColorPickerButton.color = data["background color"]
+		$OptionButton.selected = data["resolution"]
+		$ButtonOnTop.button_pressed = data["always on top"]
+		$ButtonFullscreen.button_pressed = data["fullscreen"]
+		
 func resize_label():
 	$RichTextLabel.size.y = $RichTextLabel.get_line_count() * 27
 	if $RichTextLabel.size.y >= 616:
@@ -508,17 +499,6 @@ func _on_button_int_speak_pressed():
 					DisplayServer.tts_speak($Utterance.text, voice[0], $HSliderVolume.value, $HSliderPitch.value, $HSliderRate.value, id, true)
 			id += 1
 
-func _on_button_clear_log_pressed():
-	save_files()
-	save_count += 1
-	if OS.has_feature("web"):
-		$Log.text = "\nEnglish voice available\n"
-	elif voices.size() == 1:
-		$Log.text = "\n%d voice available\n" % [voices.size()]
-	elif voices.size() > 1:
-		$Log.text = "\n%d voices available\n" % [voices.size()]
-	$Log.text += "=======================\nfiles saved #%s\n" % [save_count]
-
 func _on_h_slider_rate_value_changed(value):
 	$HSliderRate/Value.text = "%.2fx" % [value]
 
@@ -549,7 +529,7 @@ func _on_line_edit_filter_name_text_changed(_new_text):
 				child.select(0)
 
 func _on_log_text_set():
-	$Log.scroll_vertical = $Log.text.length()
+	$Log.scroll_vertical = $Log.text.count("\n") - 12 # 12 lines before scroll bar appears
 
 func _on_color_picker_button_color_changed(color):
 	RenderingServer.set_default_clear_color(color)
@@ -614,8 +594,8 @@ func _on_option_button_item_selected(index):
 
 	DisplayServer.window_set_position(Vector2(DisplayServer.screen_get_position(DisplayServer.window_get_current_screen())) + DisplayServer.screen_get_size()*0.5 - DisplayServer.window_get_size()*0.5)
 
-func _on_button_folder_pressed():
-	OS.shell_open(ProjectSettings.globalize_path("user://"))
+func _on_button_settings_pressed():
+	OS.shell_open(ProjectSettings.globalize_path(save_path))
 
 func _notification(what):
 	match what:
@@ -624,4 +604,4 @@ func _notification(what):
 		NOTIFICATION_WM_WINDOW_FOCUS_OUT:
 			window_focus = false
 		NOTIFICATION_WM_CLOSE_REQUEST:
-			$Log/ButtonClearLog.emit_signal("pressed")
+			save_files()
