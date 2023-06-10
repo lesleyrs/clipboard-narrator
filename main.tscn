@@ -11,6 +11,7 @@ grow_horizontal = 2
 grow_vertical = 2
 script = ExtResource("1_qjk75")
 metadata/_edit_lock_ = true
+metadata/_edit_group_ = true
 
 [node name="LineEditFilterName" type="LineEdit" parent="."]
 layout_mode = 1
