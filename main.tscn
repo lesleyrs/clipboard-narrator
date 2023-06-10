@@ -266,7 +266,7 @@ placeholder_text = "Welcome to Clipboard Narrator.
 Press Ctrl-C anywhere to start text to speech. Copy 1 word to stop.
 Tab or Shift-Tab to change modes. Shift to increase slider speed.
 Enter & Escape to focus and unfocus text editor. \"U\" to focus speech.
-Num keys 1-0 for recent clipboards. Close application or \"Y\" to save."
+Num keys 1-0 for recent clipboards. Close application or \"O\" to save."
 wrap_mode = 1
 draw_spaces = true
 
