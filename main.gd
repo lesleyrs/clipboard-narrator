@@ -82,13 +82,11 @@ func _ready():
 	DisplayServer.tts_set_utterance_callback(DisplayServer.TTS_UTTERANCE_BOUNDARY, Callable(self, "_on_utterance_boundary"))
 
 	refresh()
+	set_mode(false)
 	if $ButtonOnTop.button_pressed:
 		$ButtonOnTop.emit_signal("pressed")
 	if $ButtonFullscreen.button_pressed:
 		$ButtonFullscreen.emit_signal("pressed")
-	var mode_name: String = MODE.keys()[current_mode] + " MODE"
-	DisplayServer.window_set_title("Clipboard Narrator - %s" % mode_name)
-	
 	notification(NOTIFICATION_WM_WINDOW_FOCUS_IN)
 		
 func _unhandled_input(event):
@@ -127,7 +125,7 @@ func _unhandled_input(event):
 				current_mode = MODE.INTERRUPT
 			2:
 				current_mode = MODE.QUEUE
-		set_mode()
+		set_mode(true)
 			
 	elif Input.is_action_just_pressed("tts_tab") and !$Utterance.has_focus():
 		match current_mode:
@@ -137,7 +135,7 @@ func _unhandled_input(event):
 				current_mode = MODE.MANUAL
 			2:
 				current_mode = MODE.INTERRUPT
-		set_mode()
+		set_mode(true)
 
 	if Input.is_action_just_pressed("tts_space"):
 		$ButtonToggle.emit_signal("pressed")
@@ -209,16 +207,17 @@ func _unhandled_input(event):
 		and DisplayServer.window_get_mode() != DisplayServer.WINDOW_MODE_MAXIMIZED:
 			$OptionButton.show_popup()
 
-func set_mode():
-	var voice: Array = DisplayServer.tts_get_voices_for_language("en")
-	if !voice.is_empty():
-		var mode_name: String = MODE.keys()[current_mode] + " MODE"
-		ut_map[id] = mode_name
-		DisplayServer.tts_speak(mode_name, voice[0], $HSliderVolume.value, $HSliderPitch.value, $HSliderRate.value, id, true)
-		id += 1
-		DisplayServer.window_set_title("Clipboard Narrator - %s" % mode_name)
+func set_mode(speech: bool) -> void:
+	var mode_name: String = MODE.keys()[current_mode] + " MODE"
+	DisplayServer.window_set_title("Clipboard Narrator - %s" % mode_name)
+	if speech:
+		var voice: Array = DisplayServer.tts_get_voices_for_language("en")
+		if !voice.is_empty():
+			ut_map[id] = mode_name
+			DisplayServer.tts_speak(mode_name, voice[0], $HSliderVolume.value, $HSliderPitch.value, $HSliderRate.value, id, true)
+			id += 1
 			
-func get_savedata():
+func get_savedata() -> Dictionary:
 	var savedata: Dictionary = {
 		"total characters": total_chars,
 		"total lines": total_lines,
@@ -235,13 +234,13 @@ func get_savedata():
 	}
 	return savedata
 	
-func save_files():
+func save_files() -> void:
 	var json_data: String = JSON.stringify(get_savedata(), "\t")
 	var save: FileAccess = FileAccess.open(save_path, FileAccess.WRITE)
 	if FileAccess.get_open_error() == OK:
 		save.store_string(json_data)
 
-func load_files():
+func load_files() -> void:
 	if FileAccess.file_exists(save_path):
 		var save: FileAccess = FileAccess.open(save_path, FileAccess.READ)
 		if FileAccess.get_open_error() == OK:
@@ -264,14 +263,14 @@ func load_files():
 			$ButtonOnTop.button_pressed = data["always on top"]
 			$ButtonFullscreen.button_pressed = data["fullscreen"]
 		
-func resize_label():
+func resize_label() -> void:
 	$RichTextLabel.size.y = $RichTextLabel.get_line_count() * 27
 	if $RichTextLabel.size.y >= 616:
 		$RichTextLabel.size.y = 616
 		$RichTextLabel.scroll_active = true
 
 @warning_ignore("integer_division")
-func format_suffix():
+func format_suffix() -> void:
 	var format_chars: String
 	var format_lines: String
 	var chars_copied: String = " chars "
@@ -333,7 +332,7 @@ func format_suffix():
 		else:
 			$LinesLabel.text = "[center]" + str(DisplayServer.clipboard_get().count("\n")) + format_lines + "[/center]"
 
-func filter_nl():
+func filter_nl() -> String:
 	var string: PackedStringArray = last_copy.replace("\r", "").split("\n\n")
 	var text: String = ""
 	for s in string:
@@ -343,19 +342,19 @@ func filter_nl():
 			text += s.replace("\n", " ")
 	return text
 
-func refresh():
+func refresh() -> void:
 	$LineEditFilterName.emit_signal("text_changed", $LineEditFilterName.text)
 	$LineEditFilterLang.emit_signal("text_changed", $LineEditFilterLang.text)
 	$ColorPickerButton.emit_signal("color_changed", $ColorPickerButton.color)
 	$OptionButton.emit_signal("item_selected", $OptionButton.selected)
-	if current_mode != save_data["current mode"]:
-			set_mode()
 	# changing fullscreen/always on top during runtime went out of sync so it's left out
 	
 func _process(_delta):
 	if JSON.parse_string(FileAccess.get_file_as_string(save_path)) != save_data:
 		load_files()
 		refresh()
+		if current_mode != save_data["current mode"]:
+			set_mode(true)
 		save_data = JSON.parse_string(FileAccess.get_file_as_string(save_path))
 		
 	if $RichTextLabel.get_line_count() != last_lines:
@@ -437,7 +436,7 @@ func _on_button_stop_pressed():
 	$RichTextLabel.size.y = 27
 	$RichTextLabel.scroll_active = false
 
-func pause_resume():
+func pause_resume() -> void:
 	if !DisplayServer.tts_is_paused():
 		DisplayServer.tts_pause()
 	else:
