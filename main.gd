@@ -582,9 +582,7 @@ func _on_button_on_top_pressed():
 		$ButtonFullscreen.disabled = false
 
 func _on_option_button_item_selected(index):
-	var current_selected: int = index
-
-	match current_selected:
+	match index:
 		0:
 			DisplayServer.window_set_size(Vector2(854, 480))
 		1:
