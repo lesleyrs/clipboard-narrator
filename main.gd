@@ -1,11 +1,11 @@
 extends Control
 
-enum MODES { INTERRUPT, QUEUE, MANUAL }
+enum MODE { INTERRUPT, QUEUE, MANUAL }
 const INT_MAX: int = 9223372036854775807
 var id: int = 0
 var ut_map: Dictionary = {}
 var voices: Array
-var current_mode: MODES = MODES.INTERRUPT
+var current_mode: MODE = MODE.INTERRUPT
 var stylebox_flat: StyleBoxFlat = StyleBoxFlat.new()
 var window_focus: bool = false
 var last_copy: String = DisplayServer.clipboard_get()
@@ -81,18 +81,15 @@ func _ready():
 	DisplayServer.tts_set_utterance_callback(DisplayServer.TTS_UTTERANCE_CANCELED, Callable(self, "_on_utterance_error"))
 	DisplayServer.tts_set_utterance_callback(DisplayServer.TTS_UTTERANCE_BOUNDARY, Callable(self, "_on_utterance_boundary"))
 
-	$LineEditFilterName.emit_signal("text_changed", $LineEditFilterName.text)
-	$LineEditFilterLang.emit_signal("text_changed", $LineEditFilterLang.text)
-	$ColorPickerButton.emit_signal("color_changed", $ColorPickerButton.color)
-	$OptionButton.emit_signal("item_selected", $OptionButton.selected)
+	refresh()
 	if $ButtonOnTop.button_pressed:
 		$ButtonOnTop.emit_signal("pressed")
 	if $ButtonFullscreen.button_pressed:
 		$ButtonFullscreen.emit_signal("pressed")
-	notification(NOTIFICATION_WM_WINDOW_FOCUS_IN)
-
-	var mode_name: String = MODES.keys()[current_mode] + " MODE"
+	var mode_name: String = MODE.keys()[current_mode] + " MODE"
 	DisplayServer.window_set_title("Clipboard Narrator - %s" % mode_name)
+	
+	notification(NOTIFICATION_WM_WINDOW_FOCUS_IN)
 		
 func _unhandled_input(event):
 	if event is InputEventKey and event.is_pressed() and key_array.has(event.keycode):
@@ -123,38 +120,24 @@ func _unhandled_input(event):
 				id += 1
 		
 	if Input.is_action_just_pressed("tts_shift_tab") and !$Utterance.has_focus():
-		var voice: Array = DisplayServer.tts_get_voices_for_language("en")
-		if !voice.is_empty():
-			match current_mode:
-				0:
-					current_mode = MODES.MANUAL
-				1:
-					current_mode = MODES.INTERRUPT
-				2:
-					current_mode = MODES.QUEUE
-					
-			var mode_name: String = MODES.keys()[current_mode] + " MODE"
-			ut_map[id] = mode_name
-			DisplayServer.tts_speak(mode_name, voice[0], $HSliderVolume.value, $HSliderPitch.value, $HSliderRate.value, id, true)
-			id += 1
-			DisplayServer.window_set_title("Clipboard Narrator - %s" % mode_name)
-
+		match current_mode:
+			0:
+				current_mode = MODE.MANUAL
+			1:
+				current_mode = MODE.INTERRUPT
+			2:
+				current_mode = MODE.QUEUE
+		set_mode()
+			
 	elif Input.is_action_just_pressed("tts_tab") and !$Utterance.has_focus():
-		var voice: Array = DisplayServer.tts_get_voices_for_language("en")
-		if !voice.is_empty():
-			match current_mode:
-				0:
-					current_mode = MODES.QUEUE
-				1:
-					current_mode = MODES.MANUAL
-				2:
-					current_mode = MODES.INTERRUPT
-					
-			var mode_name: String = MODES.keys()[current_mode] + " MODE"
-			ut_map[id] = mode_name
-			DisplayServer.tts_speak(mode_name, voice[0], $HSliderVolume.value, $HSliderPitch.value, $HSliderRate.value, id, true)
-			id += 1
-			DisplayServer.window_set_title("Clipboard Narrator - %s" % mode_name)
+		match current_mode:
+			0:
+				current_mode = MODE.QUEUE
+			1:
+				current_mode = MODE.MANUAL
+			2:
+				current_mode = MODE.INTERRUPT
+		set_mode()
 
 	if Input.is_action_just_pressed("tts_space"):
 		$ButtonToggle.emit_signal("pressed")
@@ -226,6 +209,15 @@ func _unhandled_input(event):
 		and DisplayServer.window_get_mode() != DisplayServer.WINDOW_MODE_MAXIMIZED:
 			$OptionButton.show_popup()
 
+func set_mode():
+	var voice: Array = DisplayServer.tts_get_voices_for_language("en")
+	if !voice.is_empty():
+		var mode_name: String = MODE.keys()[current_mode] + " MODE"
+		ut_map[id] = mode_name
+		DisplayServer.tts_speak(mode_name, voice[0], $HSliderVolume.value, $HSliderPitch.value, $HSliderRate.value, id, true)
+		id += 1
+		DisplayServer.window_set_title("Clipboard Narrator - %s" % mode_name)
+			
 func get_savedata():
 	var savedata: Dictionary = {
 		"total characters": total_chars,
@@ -328,7 +320,7 @@ func format_suffix():
 	else:
 		format_lines = lines_copied + "[color=WHITE](%s)[/color]" % [total_lines]
 
-	if current_mode == MODES.MANUAL:
+	if current_mode == MODE.MANUAL:
 		$CharsLabel.text = "[center]" + str($RichTextLabel.get_total_character_count()) + format_chars + "[/center]"
 		if !$RichTextLabel.get_total_character_count() > 0:
 			$LinesLabel.text = "[center]" + str($RichTextLabel.get_line_count() - 1) + format_lines + "[/center]"
@@ -351,13 +343,20 @@ func filter_nl():
 			text += s.replace("\n", " ")
 	return text
 
+func refresh():
+	$LineEditFilterName.emit_signal("text_changed", $LineEditFilterName.text)
+	$LineEditFilterLang.emit_signal("text_changed", $LineEditFilterLang.text)
+	$ColorPickerButton.emit_signal("color_changed", $ColorPickerButton.color)
+	$OptionButton.emit_signal("item_selected", $OptionButton.selected)
+	if current_mode != save_data["current mode"]:
+			set_mode()
+	# changing fullscreen/always on top during runtime went out of sync so it's left out
+	
 func _process(_delta):
 	if JSON.parse_string(FileAccess.get_file_as_string(save_path)) != save_data:
-		save_data = JSON.parse_string(FileAccess.get_file_as_string(save_path))
 		load_files()
-		$ColorPickerButton.emit_signal("color_changed", $ColorPickerButton.color)
-		$OptionButton.emit_signal("item_selected", $OptionButton.selected)
-		# TODO: allow changing fullscreen, always on top, current mode during runtime
+		refresh()
+		save_data = JSON.parse_string(FileAccess.get_file_as_string(save_path))
 		
 	if $RichTextLabel.get_line_count() != last_lines:
 		last_lines = $RichTextLabel.get_line_count()
